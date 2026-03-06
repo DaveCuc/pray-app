@@ -24,8 +24,8 @@ export default function TimerPreferences() {
 
   return (
     <section>
-      <h3 className="text-lg font-bold text-neutral-800 dark:text-white mb-4 flex items-center gap-2">
-        <Clock size={20} className="text-yellow-500" />
+      <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+        <Clock size={20} className="text-primary" />
         Preferencia de Temporizador
       </h3>
       <div className="space-y-3">
@@ -36,26 +36,26 @@ export default function TimerPreferences() {
             <button
               key={opcion.tiempo}
               onClick={() => handleSeleccion(opcion.tiempo)}
-              className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
+              className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
                 isSelected 
-                  ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500' 
-                  : 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800 hover:border-yellow-300'
+                  ? 'bg-primary/5 border-primary drop-shadow-[0_0_10px_rgba(245,165,36,0.15)]' 
+                  : 'bg-card border-border hover:border-primary/50'
               }`}
             >
               <div className="text-left">
-                <h4 className={`font-bold ${isSelected ? 'text-yellow-700 dark:text-yellow-500' : 'text-neutral-900 dark:text-white'}`}>
+                <h4 className={`font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                   {opcion.titulo}
                 </h4>
-                <p className="text-sm text-neutral-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {opcion.descripcion}
                 </p>
               </div>
-              {isSelected && <CheckCircle2 size={24} className="text-yellow-500" />}
+              {isSelected && <CheckCircle2 size={24} className="text-primary" />}
             </button>
           );
         })}
       </div>
-      <p className="text-xs text-neutral-400 mt-4 text-center">
+      <p className="text-xs text-muted-foreground mt-4 text-center">
         Esta configuración define la meta diaria, pero puedes detenerte en cualquier momento.
       </p>
     </section>
