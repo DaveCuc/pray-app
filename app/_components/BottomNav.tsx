@@ -15,8 +15,8 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-white/70 dark:bg-black/70 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 z-50">
-      <div className="flex justify-around items-center h-20 px-2 pb-4 pt-2">
+    <nav className="fixed bottom-0 left-0 w-full bg-card border-t border-border z-50">
+      <div className="flex justify-around items-center h-16 pb-safe">
         {TABS.map((tab) => {
           const isActive = pathname === tab.path;
           const Icon = tab.icon;
@@ -25,23 +25,25 @@ export default function BottomNav() {
             <Link
               key={tab.path}
               href={tab.path}
-              className="relative flex flex-col items-center justify-center w-16 h-12"
+              className="relative flex flex-col items-center justify-center w-full h-full"
             >
+              {/* Barra indicadora superior animada */}
               {isActive && (
                 <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute inset-0 bg-yellow-500/20 dark:bg-yellow-500/10 rounded-2xl"
+                  layoutId="nav-top-indicator"
+                  className="absolute top-0 w-12 h-[3px] bg-primary rounded-b-md shadow-[0_1px_8px_rgba(245,165,36,0.6)]"
                   initial={false}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
+              
               <Icon
-                className={`w-6 h-6 z-10 transition-colors ${
-                  isActive ? 'text-yellow-600 dark:text-yellow-500' : 'text-gray-500 dark:text-gray-400'
+                className={`w-6 h-6 mb-1 transition-colors ${
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}
               />
-              <span className={`text-[10px] mt-1 z-10 font-medium ${
-                isActive ? 'text-yellow-600 dark:text-yellow-500' : 'text-gray-500 dark:text-gray-400'
+              <span className={`text-[10px] font-medium transition-colors ${
+                isActive ? 'text-primary' : 'text-muted-foreground'
               }`}>
                 {tab.name}
               </span>
