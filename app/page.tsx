@@ -31,9 +31,13 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="bg-white dark:bg-neutral-900 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800">
-        {/* Pasamos la función combinada al Reloj */}
-        <Reloj onFinish={handleFaseCompletada} />
+      {/* 3. Temporizador de Oración */}
+      <section className="bg-card rounded-3xl shadow-sm border border-border">
+        {/* Pasamos stats.completedToday para mantener la vela encendida */}
+        <Reloj 
+          onFinish={handleFaseCompletada} 
+          yaOramosHoy={stats.completedToday} 
+        />
       </section>
 
       <section className="pb-10">
