@@ -24,36 +24,36 @@ const Evangelio = ({ indiceLectura, avanzarLectura, isLoaded }: EvangelioProps) 
   const lecturaSalmo = (indiceLectura % TOTAL_SALMOS) + 1;
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800">
+    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border text-foreground">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-600 dark:text-blue-400">
+        <div className="p-3 bg-primary/10 rounded-xl text-primary">
           <BookOpen size={24} />
         </div>
-        <h3 className="text-xl font-bold text-neutral-800 dark:text-white">Lectura del Día</h3>
+        <h3 className="text-xl font-bold text-foreground">Lectura del Día</h3>
       </div>
 
       <div className="space-y-4 mb-6">
-        <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
-          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Evangelio</p>
-          <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-            {lecturaEvangelio.libro} <span className="text-blue-500">{lecturaEvangelio.capitulo}</span>
+        <div className="p-4 rounded-2xl bg-muted/30 border border-border">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Evangelio</p>
+          <p className="text-2xl font-bold text-foreground">
+            {lecturaEvangelio.libro} <span className="text-primary">{lecturaEvangelio.capitulo}</span>
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
-          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Salmo</p>
-          <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-            Capítulo <span className="text-blue-500">{lecturaSalmo}</span>
+        <div className="p-4 rounded-2xl bg-muted/30 border border-border">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Salmo</p>
+          <p className="text-2xl font-bold text-foreground">
+            Capitulo <span className="text-primary">{lecturaSalmo}</span>
           </p>
         </div>
       </div>
 
-      {/* Botón manual opcional, por si el usuario quiere avanzar sin usar el reloj */}
+      {/* Boton manual opcional, por si el usuario quiere avanzar sin usar el reloj */}
       <button
         onClick={avanzarLectura}
-        className="hidden w-full py-3 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-black font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 hover:drop-shadow-[0_0_8px_rgba(245,165,36,0.3)] transition-all"
       >
-        Avanzar lectura manualmente
+        Avanzar lectura
       </button>
     </div>
   );

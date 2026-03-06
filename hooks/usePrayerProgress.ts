@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 export function usePrayerProgress() {
   const [stats, setStats] = useState({
     currentStreak: 0,
+    totalDays: 0,
     lastDate: '',
     completedToday: false
   });
@@ -26,6 +27,7 @@ export function usePrayerProgress() {
 
       setStats({
         ...data,
+        totalDays: data.totalDays ?? data.currentStreak ?? 0,
         completedToday: data.lastDate === today
       });
     }
@@ -36,6 +38,7 @@ export function usePrayerProgress() {
     const newStats = {
       ...stats,
       currentStreak: stats.completedToday ? stats.currentStreak : stats.currentStreak + 1,
+      totalDays: stats.completedToday ? stats.totalDays : stats.totalDays + 1,
       lastDate: today,
       completedToday: true
     };
