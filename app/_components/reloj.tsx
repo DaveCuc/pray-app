@@ -50,6 +50,23 @@ const Reloj = ({ onFinish, yaOramosHoy = false }: RelojProps) => {
     return () => clearInterval(interval);
   }, [isRunning, minutes, seconds, onFinish]);
 
+  // NUEVO: Pausar si el usuario cambia de pestaña o minimiza la app
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // Si la pestaña se oculta y el reloj estaba corriendo, lo pausamos
+      if (document.hidden && isRunning) {
+        setIsRunning(false);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Limpiamos el event listener cuando se desmonta el componente
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isRunning]); // Depende de isRunning para saber si necesita pausarlo
+
   const togglePlayPause = () => setIsRunning(!isRunning);
 
   const handleReset = () => {
