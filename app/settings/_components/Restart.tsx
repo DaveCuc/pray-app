@@ -5,10 +5,10 @@ import { useLectura } from '@/hooks/useLectura';
 
 
 const RestartSection = () => {
-    const { reiniciarLectura } = useLectura();
+    const { reiniciarLectura, isSaving } = useLectura();
 
     const handleReiniciarLectura = () => {
-        const confirmado = window.confirm('Estas seguro de reiniciar tus citas biblicas');
+        const confirmado = window.confirm('¿Estás seguro de reiniciar tus lecturas bíblicas? Esto volverá a Mateo 1.');
         if (confirmado) {
             reiniciarLectura();
         }
@@ -28,12 +28,12 @@ const RestartSection = () => {
                             Reiniciar lecturas
                         </h4>
                         <p className="text-sm text-muted-foreground mt-1 pr-2">
-                            Esto reiniciará tus lecturas biblicas, pero no eliminará tus estadísticas de oración.
+                            Esto reiniciará tus lecturas bíblicas a Mateo 1, pero no eliminará tus estadísticas de oración.
                         </p>
                     </div>
                 
 
-                <button className="text-primary font-bold" onClick={handleReiniciarLectura} style={{ cursor: "pointer" }}>
+                <button className="text-primary font-bold disabled:opacity-50" onClick={handleReiniciarLectura} disabled={isSaving} style={{ cursor: "pointer" }}>
                     REINICIAR
                     
                 </button>

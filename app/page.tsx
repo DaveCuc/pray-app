@@ -9,7 +9,7 @@ import Attention from './_components/Attention';
 
 export default function Home() {
   const { stats, saveProgress } = usePrayerProgress();
-  const { indiceLectura, avanzarLectura, isLoaded } = useLectura();
+  const { lecturaActual, avanzarLectura, isLoaded } = useLectura();
 
   // Esta función se ejecuta CADA VEZ que termina una fase de 20 min en el Reloj
   const handleFaseCompletada = () => {
@@ -34,7 +34,8 @@ export default function Home() {
       <section className="pb-10">
 
         <Evangelio
-          indiceLectura={indiceLectura}
+          libro={lecturaActual.libro}
+          capitulo={lecturaActual.capitulo}
           isLoaded={isLoaded}
         />
       </section>
