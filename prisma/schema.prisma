@@ -1,20 +1,23 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 model User {
-  id              String    @id // ID proporcionado por Clerk
+  id              String    @id 
   activeStreak    Int       @default(0)
   longestStreak   Int       @default(0)
   totalDays       Int       @default(0)
   lastPrayerDate  DateTime? @db.Date
+  currentBook     String    @default("Mateo")
+  currentChapter  Int       @default(1)
+
   createdAt       DateTime  @default(now())
+  
   
   prayers         Prayer[]
 }

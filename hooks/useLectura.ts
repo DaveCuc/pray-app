@@ -25,5 +25,10 @@ export const useLectura = () => {
     localStorage.setItem('oratio-lectura', '0');
   };
 
-  return { indiceLectura, avanzarLectura, reiniciarLectura, isLoaded };
+  const ajustarLectura = (nuevoIndice: number) => {
+    setIndiceLectura(nuevoIndice);
+    localStorage.setItem('oratio-lectura', nuevoIndice.toString());
+  };
+
+  return { indiceLectura, avanzarLectura, reiniciarLectura, ajustarLectura, isLoaded };
 };

@@ -1,51 +1,60 @@
-
-import { useState, useEffect } from 'react';
+// hooks/usePrayerProgress.ts
+import { useState, useEffect, useTransition } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import { getPrayerStats, savePrayerSession } from '@/actions/prayer';
 
 export function usePrayerProgress() {
+  const { isSignedIn } = useAuth();
+  const [isPending, startTransition] = useTransition();
   const [stats, setStats] = useState({
     currentStreak: 0,
     totalDays: 0,
-    lastDate: '',
-    completedToday: false
+    longestStreak: 0,
+    completedToday: false,
+    isLoading: true
   });
 
-  // Cargar datos al montar el componente (Solo en el cliente)
   useEffect(() => {
-    const saved = localStorage.getItem('prayer-progress');
-    if (saved) {
-      const data = JSON.parse(saved);
-      const today = new Date().toDateString();
-      
-      // Lógica de reset de racha si pasó más de 1 día
-      if (data.lastDate) {
-        const last = new Date(data.lastDate);
-        const now = new Date();
-        const diffInDays = Math.floor((now.getTime() - last.getTime()) / (1000 * 3600 * 24));
-        
-        if (diffInDays > 1) data.currentStreak = 0;
-      }
-
-      setStats({
-        ...data,
-        totalDays: data.totalDays ?? data.currentStreak ?? 0,
-        completedToday: data.lastDate === today
-      });
+    if (!isSignedIn) {
+      setStats(prev => ({ ...prev, isLoading: false }));
+      return;
     }
-  }, []);
 
-  const saveProgress = () => {
-    const today = new Date().toDateString();
-    const newStats = {
-      ...stats,
-      currentStreak: stats.completedToday ? stats.currentStreak : stats.currentStreak + 1,
-      totalDays: stats.completedToday ? stats.totalDays : stats.totalDays + 1,
-      lastDate: today,
-      completedToday: true
+    const loadData = async () => {
+      try {
+        const data = await getPrayerStats();
+        if (data) {
+          setStats({ ...data, isLoading: false });
+        }
+      } catch (error) {
+        console.error("Error al cargar rachas:", error);
+        setStats(prev => ({ ...prev, isLoading: false }));
+      }
     };
 
-    setStats(newStats);
-    localStorage.setItem('prayer-progress', JSON.stringify(newStats));
+    loadData();
+  }, [isSignedIn]);
+
+  const saveProgress = (duration: number = 20) => {
+    if (!isSignedIn) return;
+
+    // Actualización optimista: Reflejamos el cambio en la UI instantáneamente
+    setStats(prev => ({
+      ...prev,
+      currentStreak: prev.completedToday ? prev.currentStreak : prev.currentStreak + 1,
+      totalDays: prev.completedToday ? prev.totalDays : prev.totalDays + 1,
+      completedToday: true
+    }));
+
+    // Enviamos a Supabase silenciosamente
+    startTransition(async () => {
+      try {
+        await savePrayerSession(duration);
+      } catch (error) {
+        console.error("Error al guardar la sesión:", error);
+      }
+    });
   };
 
-  return { stats, saveProgress };
+  return { stats, saveProgress, isSaving: isPending };
 }
