@@ -34,13 +34,19 @@ export async function updateReadingProgress(book: string, chapter: number, psalm
   const { userId } = await auth();
   if (!userId) throw new Error("No autenticado");
 
-  await prisma.user.update({
+  await prisma.user.upsert({
     where: { id: userId },
-    data: {
+    create: {
+      id: userId,
       currentBook: book,
       currentChapter: chapter,
-      currentPsalm: psalm
-    }
+      currentPsalm: psalm,
+    },
+    update: {
+      currentBook: book,
+      currentChapter: chapter,
+      currentPsalm: psalm,
+    },
   });
 
   // Refrescamos la página inicial para que muestre el nuevo capítulo
