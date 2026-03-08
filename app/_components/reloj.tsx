@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, RotateCcw, ArrowRight, Flame } from "lucide-react";
-import Vela from "./vela";
+import Vela from "./Vela";
 
 const FASES = [
   { id: 1, nombre: "Acción de Gracias", duration: 1 },
@@ -160,6 +160,7 @@ const Reloj = ({ onFinish, yaOramosHoy = false }: RelojProps) => {
             <button
               onClick={togglePlayPause}
               className="w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-all shadow-lg hover:bg-oratio-gold-hover hover:scale-105"
+              style={{ cursor: "pointer" }}
             >
               {isRunning ? (
                 <Pause size={32} fill="currentColor" />
@@ -167,12 +168,7 @@ const Reloj = ({ onFinish, yaOramosHoy = false }: RelojProps) => {
                 <Play size={32} className="ml-1" fill="currentColor" />
               )}
             </button>
-            <button
-              onClick={handleReset}
-              className="w-20 h-20 rounded-full bg-muted text-muted-foreground flex items-center justify-center transition-all hover:bg-secondary"
-            >
-              <RotateCcw size={24} />
-            </button>
+            
           </div>
         ) : (
           faseActual < 2 ? (

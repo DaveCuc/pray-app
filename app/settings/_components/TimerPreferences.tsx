@@ -41,6 +41,7 @@ export default function TimerPreferences() {
                   ? 'bg-primary/5 border-primary drop-shadow-[0_0_10px_rgba(245,165,36,0.15)]' 
                   : 'bg-card border-border hover:border-primary/50'
               }`}
+              style={{ cursor: "pointer" }}
             >
               <div className="text-left">
                 <h4 className={`font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>

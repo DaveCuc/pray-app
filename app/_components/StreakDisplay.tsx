@@ -1,15 +1,10 @@
-import { motion } from 'framer-motion';
 
-export default function StreakDisplay({ count }: { count: number }) {
+import CandleIco from './Candle';
+
+export default function StreakDisplay({ count, isActive }: { count: number; isActive: boolean }) {
   return (
     <div className="flex items-center gap-2 bg-orange-500/10 px-4 py-2 rounded-2xl border border-orange-500/20">
-      <motion.span 
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        className="text-2xl"
-      >
-        🔥
-      </motion.span>
+      <CandleIco isActive={isActive} />
       <span className="text-lg font-bold text-orange-500">{count} días</span>
     </div>
   );

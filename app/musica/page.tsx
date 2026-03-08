@@ -1,6 +1,7 @@
 import { Music } from 'lucide-react';
 import PlataformasMusica from './_components/PlataformasMusica';
 import SugerenciasMusica from './_components/SugerenciasMusica';
+import Upcoming from '../_components/Upcoming';
 
 export default function MusicPage() {
   return (
@@ -18,8 +19,11 @@ export default function MusicPage() {
       </header>
 
       {/* Componentes modulares */}
-      <PlataformasMusica />
-      <SugerenciasMusica />
+
+
+      {/* <PlataformasMusica /> */}
+      {/*<SugerenciasMusica /> */}
+      <Upcoming />
 
     </div>
   );

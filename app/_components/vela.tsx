@@ -1,3 +1,4 @@
+import './Candle.css';
 export default function Vela() {
   return (
     <div className="candle-holder">

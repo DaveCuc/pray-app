@@ -20,5 +20,10 @@ export const useLectura = () => {
     });
   };
 
-  return { indiceLectura, avanzarLectura, isLoaded };
+  const reiniciarLectura = () => {
+    setIndiceLectura(0);
+    localStorage.setItem('oratio-lectura', '0');
+  };
+
+  return { indiceLectura, avanzarLectura, reiniciarLectura, isLoaded };
 };

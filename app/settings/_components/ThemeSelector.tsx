@@ -40,7 +40,8 @@ export default function ThemeSelector() {
                 isSelected 
                   ? 'bg-primary/10 text-primary drop-shadow-[0_0_8px_rgba(245,165,36,0.1)]' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
+              }` }
+              style={{ cursor: "pointer" }}
             >
               <Icon size={20} />
               <span className="text-xs font-semibold">{opt.label}</span>

@@ -13,11 +13,10 @@ const TOTAL_SALMOS = 150;
 
 interface EvangelioProps {
   indiceLectura: number;
-  avanzarLectura: () => void;
   isLoaded: boolean;
 }
 
-const Evangelio = ({ indiceLectura, avanzarLectura, isLoaded }: EvangelioProps) => {
+const Evangelio = ({ indiceLectura, isLoaded }: EvangelioProps) => {
   if (!isLoaded) return null;
 
   const lecturaEvangelio = EVANGELIOS[indiceLectura % EVANGELIOS.length];
@@ -48,13 +47,6 @@ const Evangelio = ({ indiceLectura, avanzarLectura, isLoaded }: EvangelioProps) 
         </div>
       </div>
 
-      {/* Boton manual opcional, por si el usuario quiere avanzar sin usar el reloj */}
-      <button
-        onClick={avanzarLectura}
-        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 hover:drop-shadow-[0_0_8px_rgba(245,165,36,0.3)] transition-all"
-      >
-        Avanzar lectura
-      </button>
     </div>
   );
 };
