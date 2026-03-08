@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "./_components/navbar";
-import BottomNav from "./_components/bottomNav";
+import BottomNav from "./_components/BottomNav";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import LeftNav from "./_components/leftNav";
+import LeftNav from "./_components/LeftNav";
 
 import { ClerkProvider, SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 
