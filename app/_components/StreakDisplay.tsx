@@ -1,5 +1,5 @@
 
-import CandleIco from './Candle';
+import CandleIco from './CandleIco';
 
 export default function StreakDisplay({ count, isActive }: { count: number; isActive: boolean }) {
   return (
