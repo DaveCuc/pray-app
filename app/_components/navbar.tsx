@@ -1,6 +1,6 @@
 'use client';
 
-import StreakDisplay from "./streakDisplay";
+import StreakDisplay from "./StreakDisplay";
 import { usePrayerProgress } from '@/hooks/usePrayerProgress';
 
 const NavBar = () => {
