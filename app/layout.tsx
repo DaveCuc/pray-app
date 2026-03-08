@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 };
 
 import { auth } from "@clerk/nextjs/server";
+import Attention from "./_components/Attention";
 
 export default async function RootLayout({
   children,
@@ -44,6 +45,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             {isSignedIn && <NavBar />}
+            <Attention />
             <div className="md:flex md:min-h-[calc(100vh-4rem)]">
               {isSignedIn && (
                 <div className="hidden md:block md:w-72 border-r border-border bg-muted/20">

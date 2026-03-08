@@ -4,7 +4,7 @@ import { usePrayerProgress } from '@/hooks/usePrayerProgress';
 import { useLectura } from '@/hooks/useLectura';
 import Reloj from './_components/Reloj';
 import Evangelio from './_components/Evangelio';
-import Attention from './_components/Attention';
+
 
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6 space-y-8">
 
-    <Attention />
+    
 
       <section className="bg-card rounded-3xl shadow-sm border border-border">
 
