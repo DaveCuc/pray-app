@@ -2,7 +2,6 @@
 
 
 import { Show, UserButton } from '@clerk/nextjs';
-import { User } from 'lucide-react';
 
 export default function UserCard() {
   
@@ -13,7 +12,7 @@ export default function UserCard() {
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center border-2 border-primary">
           
               <Show when="signed-in">
-                <UserButton size={32}/>
+                <UserButton />
               </Show>
         </div>
         <div>

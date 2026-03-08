@@ -6,9 +6,9 @@ import { Play, Pause, RotateCcw, ArrowRight, Flame } from "lucide-react";
 import Vela from "./Vela";
 
 const FASES = [
-  { id: 1, nombre: "Acción de Gracias", duration: 1 },
-  { id: 2, nombre: "Alabanza", duration: 1 },
-  { id: 3, nombre: "Espíritu Santo", duration: 1 },
+  { id: 1, nombre: "Acción de Gracias", duration: 20 },
+  { id: 2, nombre: "Alabanza", duration: 20 },
+  { id: 3, nombre: "Espíritu Santo", duration: 20 },
 ];
 
 interface RelojProps {
