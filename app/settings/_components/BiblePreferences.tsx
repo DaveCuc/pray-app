@@ -11,68 +11,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const EVANGELIOS = [
-  ...Array.from({ length: 28 }, (_, i) => ({ libro: 'Mateo', capitulo: i + 1 })),
-  ...Array.from({ length: 16 }, (_, i) => ({ libro: 'Marcos', capitulo: i + 1 })),
-  ...Array.from({ length: 24 }, (_, i) => ({ libro: 'Lucas', capitulo: i + 1 })),
-  ...Array.from({ length: 21 }, (_, i) => ({ libro: 'Juan', capitulo: i + 1 })),
-];
-
 const TOTAL_SALMOS = 150;
-const TOTAL_EVANGELIOS = EVANGELIOS.length; // 89
 
 const LIBROS_INFO = {
-  'Mateo': { capitulos: 28, indiceInicio: 0 },
-  'Marcos': { capitulos: 16, indiceInicio: 28 },
-  'Lucas': { capitulos: 24, indiceInicio: 44 },
-  'Juan': { capitulos: 21, indiceInicio: 68 },
+  'Mateo': { capitulos: 28 },
+  'Marcos': { capitulos: 16 },
+  'Lucas': { capitulos: 24 },
+  'Juan': { capitulos: 21 },
 };
 
 const BiblePreferences = () => {
-    const { indiceLectura, ajustarLectura, isLoaded } = useLectura();
+    const { lecturaActual, ajustarLectura, isLoaded, isSaving } = useLectura();
     const [modoEdicion, setModoEdicion] = useState(false);
     const [libroSeleccionado, setLibroSeleccionado] = useState<keyof typeof LIBROS_INFO>('Mateo');
     const [capituloSeleccionado, setCapituloSeleccionado] = useState(1);
-    const [salmoSeleccionado, setSalmoSeleccionado] = useState(1);
-    const [lecturaActual, setLecturaActual] = useState({ libro: '', capitulo: 0, salmo: 0 });
 
-    // Calcular lecturas actuales cuando cambia el índice
+    // Sincronizar selectores con la lectura guardada en BD
     useEffect(() => {
-        if (isLoaded) {
-            const lecturaEvangelio = EVANGELIOS[indiceLectura % TOTAL_EVANGELIOS];
-            const lecturaSalmo = (indiceLectura % TOTAL_SALMOS) + 1;
-            
-            setLecturaActual({
-                libro: lecturaEvangelio.libro,
-                capitulo: lecturaEvangelio.capitulo,
-                salmo: lecturaSalmo
-            });
-            
-            setLibroSeleccionado(lecturaEvangelio.libro as keyof typeof LIBROS_INFO);
-            setCapituloSeleccionado(lecturaEvangelio.capitulo);
-            setSalmoSeleccionado(lecturaSalmo);
-        }
-    }, [indiceLectura, isLoaded]);
+        if (!isLoaded) return;
+
+        setLibroSeleccionado(lecturaActual.libro as keyof typeof LIBROS_INFO);
+        setCapituloSeleccionado(lecturaActual.capitulo);
+    }, [lecturaActual, isLoaded]);
 
     const handleAjustarLectura = () => {
-        // Calcular el índice basado en el evangelio seleccionado
-        const info = LIBROS_INFO[libroSeleccionado];
-        const indiceEvangelio = info.indiceInicio + (capituloSeleccionado - 1);
-        
-        // Encontrar un índice que coincida con el salmo deseado
-        let nuevoIndice = indiceEvangelio;
-        const salmoDeseado = salmoSeleccionado - 1; // 0-indexed
-        
-        // Ajustar para que coincida con el salmo
-        while ((nuevoIndice % TOTAL_SALMOS) !== salmoDeseado) {
-            nuevoIndice += TOTAL_EVANGELIOS;
-            // Evitar bucle infinito
-            if (nuevoIndice > TOTAL_EVANGELIOS * TOTAL_SALMOS) {
-                break;
-            }
-        }
-        
-        ajustarLectura(nuevoIndice);
+        ajustarLectura(libroSeleccionado, capituloSeleccionado);
         setModoEdicion(false);
     };
 
@@ -80,9 +43,10 @@ const BiblePreferences = () => {
         // Restaurar valores originales
         setLibroSeleccionado(lecturaActual.libro as keyof typeof LIBROS_INFO);
         setCapituloSeleccionado(lecturaActual.capitulo);
-        setSalmoSeleccionado(lecturaActual.salmo);
         setModoEdicion(false);
     };
+
+    const salmoActual = ((lecturaActual.capitulo - 1) % TOTAL_SALMOS) + 1;
 
     if (!isLoaded) return null;
 
@@ -116,7 +80,7 @@ const BiblePreferences = () => {
                                 <div>
                                     <p className="text-sm text-muted-foreground">Salmo</p>
                                     <p className="text-xl font-bold text-foreground">
-                                        Capítulo <span className="text-primary">{lecturaActual.salmo}</span>
+                                        Capítulo <span className="text-primary">{salmoActual}</span>
                                     </p>
                                 </div>
                             </div>
@@ -173,27 +137,9 @@ const BiblePreferences = () => {
                             </div>
                         </div>
 
-                        {/* Selector de Salmo */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">
-                                Salmo
-                            </label>
-                            <Select
-                                value={salmoSeleccionado.toString()}
-                                onValueChange={(value) => setSalmoSeleccionado(Number(value))}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Array.from({ length: TOTAL_SALMOS }, (_, i) => (
-                                        <SelectItem key={i + 1} value={(i + 1).toString()}>
-                                            Salmo {i + 1}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            El salmo se calcula automaticamente en base al capitulo del evangelio.
+                        </p>
 
                         {/* Botones de acción */}
                         <div className="flex items-center justify-end gap-2 pt-2">
@@ -206,7 +152,8 @@ const BiblePreferences = () => {
                             </button>
                             <button 
                                 onClick={handleAjustarLectura}
-                                className="p-2 hover:bg-primary/10 rounded-xl transition-colors text-primary"
+                                disabled={isSaving}
+                                className="p-2 hover:bg-primary/10 rounded-xl transition-colors text-primary disabled:opacity-50"
                                 aria-label="Aplicar cambios"
                             >
                                 <Check size={24} />

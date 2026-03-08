@@ -85,10 +85,25 @@ export const useLectura = () => {
     });
   };
 
+  const ajustarLectura = (libro: string, capitulo: number) => {
+    if (!isSignedIn) return;
+
+    setLecturaActual({ libro, capitulo });
+
+    startTransition(async () => {
+      try {
+        await updateReadingProgress(libro, capitulo);
+      } catch (error) {
+        console.error('Error al ajustar lectura:', error);
+      }
+    });
+  };
+
   return { 
     lecturaActual, 
     avanzarLectura, 
     reiniciarLectura, 
+    ajustarLectura,
     isLoaded,
     isSaving: isPending 
   };
