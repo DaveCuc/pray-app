@@ -5,6 +5,7 @@ import { useLectura } from '@/hooks/useLectura';
 import Reloj from './_components/Reloj';
 import Evangelio from './_components/evangelio';
 
+
 export default function Home() {
   const { stats, saveProgress } = usePrayerProgress();
   const { indiceLectura, avanzarLectura, isLoaded } = useLectura();
@@ -35,7 +36,7 @@ export default function Home() {
           isLoaded={isLoaded}
         />
       </section>
-
+    
     </div>
   );
 }

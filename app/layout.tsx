@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "./_components/Navbar";
-import NavbarMobile from "./_components/navbar-mobile";
+import NavBar from "./_components/navbar";
 import BottomNav from "./_components/BottomNav";
-import { ThemeProvider } from "@/components/ui/theme-provider"; // <-- Importación añadida
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import LeftNav from "./_components/LeftNav";
+import Upcoming from "./_components/Upcoming";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,11 +38,18 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <NavBar />
-          <main>
-            {children}
-          </main>
+          <div className="md:flex md:min-h-[calc(100vh-4rem)]">
+            <div className="hidden md:block md:w-72 border-r border-border bg-muted/20">
+              <LeftNav />
+              
+            </div>
+            
+            <main className="flex-1 min-w-0">
+              {children}
+            </main>
+          </div>
           <BottomNav />
-          <NavbarMobile />
+          
         </ThemeProvider>
       </body>
     </html>

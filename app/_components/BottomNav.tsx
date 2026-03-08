@@ -15,7 +15,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-card border-t border-border z-50">
+    <nav className="fixed bottom-0 left-0 w-full bg-card border-t border-border z-50 md:hidden">
       <div className="flex justify-around items-center h-16 pb-safe">
         {TABS.map((tab) => {
           const isActive = pathname === tab.path;
@@ -31,7 +31,7 @@ export default function BottomNav() {
               {isActive && (
                 <motion.div
                   layoutId="nav-top-indicator"
-                  className="absolute top-0 w-12 h-[3px] bg-primary rounded-b-md shadow-[0_1px_8px_rgba(245,165,36,0.6)]"
+                  className="absolute top-0 w-12 h-0.75 bg-primary rounded-b-md shadow-[0_1px_8px_rgba(245,165,36,0.6)]"
                   initial={false}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
