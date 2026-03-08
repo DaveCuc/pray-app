@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, RotateCcw, ArrowRight, Flame } from "lucide-react";
-import Vela from "./Vela";
+import Vela from "./vela";
 
 const FASES = [
   { id: 1, nombre: "Acción de Gracias", duration: 20 },

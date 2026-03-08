@@ -1,7 +1,7 @@
 import { Music } from 'lucide-react';
 import PlataformasMusica from './_components/PlataformasMusica';
 import SugerenciasMusica from './_components/SugerenciasMusica';
-import Upcoming from '../_components/Upcoming';
+import Upcoming from '../_components/upcoming';
 
 export default function MusicPage() {
   return (
