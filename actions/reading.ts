@@ -4,23 +4,33 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+type ReadingProgress = {
+  currentBook: string;
+  currentChapter: number;
+  currentPsalm: number;
+};
+
 // Obtener dónde se quedó el usuario
-export async function getReadingProgress() {
+export async function getReadingProgress(): Promise<ReadingProgress> {
   const { userId } = await auth();
   
   // Si no está logueado, le damos los valores por defecto
-  if (!userId) return { currentBook: 'Mateo', currentChapter: 1 };
+  if (!userId) return { currentBook: 'Mateo', currentChapter: 1, currentPsalm: 1 };
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { currentBook: true, currentChapter: true }
+    select: { currentBook: true, currentChapter: true, currentPsalm: true }
   });
 
-  return user || { currentBook: 'Mateo', currentChapter: 1 };
+  return {
+    currentBook: user?.currentBook ?? 'Mateo',
+    currentChapter: user?.currentChapter ?? 1,
+    currentPsalm: user?.currentPsalm ?? 1,
+  };
 }
 
 // Guardar el nuevo capítulo cuando avanza
-export async function updateReadingProgress(book: string, chapter: number) {
+export async function updateReadingProgress(book: string, chapter: number, psalm: number) {
   const { userId } = await auth();
   if (!userId) throw new Error("No autenticado");
 
@@ -28,7 +38,8 @@ export async function updateReadingProgress(book: string, chapter: number) {
     where: { id: userId },
     data: {
       currentBook: book,
-      currentChapter: chapter
+      currentChapter: chapter,
+      currentPsalm: psalm
     }
   });
 

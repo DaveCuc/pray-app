@@ -2,19 +2,15 @@
 
 import { BookOpen } from 'lucide-react';
 
-const TOTAL_SALMOS = 150;
-
 interface EvangelioProps {
   libro: string;
   capitulo: number;
+  salmo: number;
   isLoaded: boolean;
 }
 
-const Evangelio = ({ libro, capitulo, isLoaded }: EvangelioProps) => {
+const Evangelio = ({ libro, capitulo, salmo, isLoaded }: EvangelioProps) => {
   if (!isLoaded) return null;
-
-  // Calculamos el salmo correspondiente basado en el capítulo del evangelio
-  const lecturaSalmo = ((capitulo - 1) % TOTAL_SALMOS) + 1;
 
   return (
     <div className="bg-card rounded-3xl p-6 shadow-sm border border-border text-foreground">
@@ -27,16 +23,16 @@ const Evangelio = ({ libro, capitulo, isLoaded }: EvangelioProps) => {
 
       <div className="space-y-4 mb-6">
         <div className="p-4 rounded-2xl bg-muted/30 border border-border">
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Evangelio</p>
+          
           <p className="text-2xl font-bold text-foreground">
             {libro} <span className="text-primary">{capitulo}</span>
           </p>
         </div>
 
         <div className="p-4 rounded-2xl bg-muted/30 border border-border">
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Salmo</p>
+          
           <p className="text-2xl font-bold text-foreground">
-            Capitulo <span className="text-primary">{lecturaSalmo}</span>
+            Salmo <span className="text-primary">{salmo}</span>
           </p>
         </div>
       </div>

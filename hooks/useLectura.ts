@@ -9,6 +9,7 @@ const EVANGELIOS = [
   ...Array.from({ length: 24 }, (_, i) => ({ libro: 'Lucas', capitulo: i + 1 })),
   ...Array.from({ length: 21 }, (_, i) => ({ libro: 'Juan', capitulo: i + 1 })),
 ];
+const TOTAL_SALMOS = 150;
 
 export const useLectura = () => {
   const { isSignedIn } = useAuth();
@@ -16,6 +17,7 @@ export const useLectura = () => {
   const [lecturaActual, setLecturaActual] = useState({
     libro: 'Mateo',
     capitulo: 1,
+    salmo: 1,
   });
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -32,6 +34,7 @@ export const useLectura = () => {
         setLecturaActual({
           libro: progress.currentBook,
           capitulo: progress.currentChapter,
+          salmo: progress.currentPsalm,
         });
       } catch (error) {
         console.error('Error al cargar progreso de lectura:', error);
@@ -54,17 +57,19 @@ export const useLectura = () => {
     // Avanzar al siguiente capítulo (o volver al inicio si llegamos al final)
     const nuevoIndice = (indiceActual + 1) % EVANGELIOS.length;
     const nuevaLectura = EVANGELIOS[nuevoIndice];
+    const nuevoSalmo = (lecturaActual.salmo % TOTAL_SALMOS) + 1;
 
     // Actualización optimista en el UI
     setLecturaActual({
       libro: nuevaLectura.libro,
       capitulo: nuevaLectura.capitulo,
+      salmo: nuevoSalmo,
     });
 
     // Guardar en la BD silenciosamente
     startTransition(async () => {
       try {
-        await updateReadingProgress(nuevaLectura.libro, nuevaLectura.capitulo);
+        await updateReadingProgress(nuevaLectura.libro, nuevaLectura.capitulo, nuevoSalmo);
       } catch (error) {
         console.error('Error al guardar progreso de lectura:', error);
       }
@@ -74,25 +79,25 @@ export const useLectura = () => {
   const reiniciarLectura = () => {
     if (!isSignedIn) return;
 
-    setLecturaActual({ libro: 'Mateo', capitulo: 1 });
+    setLecturaActual({ libro: 'Mateo', capitulo: 1, salmo: 1 });
 
     startTransition(async () => {
       try {
-        await updateReadingProgress('Mateo', 1);
+        await updateReadingProgress('Mateo', 1, 1);
       } catch (error) {
         console.error('Error al reiniciar lectura:', error);
       }
     });
   };
 
-  const ajustarLectura = (libro: string, capitulo: number) => {
+  const ajustarLectura = (libro: string, capitulo: number, salmo: number) => {
     if (!isSignedIn) return;
 
-    setLecturaActual({ libro, capitulo });
+    setLecturaActual({ libro, capitulo, salmo });
 
     startTransition(async () => {
       try {
-        await updateReadingProgress(libro, capitulo);
+        await updateReadingProgress(libro, capitulo, salmo);
       } catch (error) {
         console.error('Error al ajustar lectura:', error);
       }

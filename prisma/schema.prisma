@@ -15,6 +15,7 @@ model User {
   lastPrayerDate  DateTime? @db.Date
   currentBook     String    @default("Mateo")
   currentChapter  Int       @default(1)
+  currentPsalm    Int       @default(1)
 
   createdAt       DateTime  @default(now())
   

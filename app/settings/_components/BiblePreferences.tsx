@@ -25,6 +25,7 @@ const BiblePreferences = () => {
     const [modoEdicion, setModoEdicion] = useState(false);
     const [libroSeleccionado, setLibroSeleccionado] = useState<keyof typeof LIBROS_INFO>('Mateo');
     const [capituloSeleccionado, setCapituloSeleccionado] = useState(1);
+    const [salmoSeleccionado, setSalmoSeleccionado] = useState(1);
 
     // Sincronizar selectores con la lectura guardada en BD
     useEffect(() => {
@@ -32,10 +33,11 @@ const BiblePreferences = () => {
 
         setLibroSeleccionado(lecturaActual.libro as keyof typeof LIBROS_INFO);
         setCapituloSeleccionado(lecturaActual.capitulo);
+        setSalmoSeleccionado(lecturaActual.salmo);
     }, [lecturaActual, isLoaded]);
 
     const handleAjustarLectura = () => {
-        ajustarLectura(libroSeleccionado, capituloSeleccionado);
+        ajustarLectura(libroSeleccionado, capituloSeleccionado, salmoSeleccionado);
         setModoEdicion(false);
     };
 
@@ -43,10 +45,9 @@ const BiblePreferences = () => {
         // Restaurar valores originales
         setLibroSeleccionado(lecturaActual.libro as keyof typeof LIBROS_INFO);
         setCapituloSeleccionado(lecturaActual.capitulo);
+        setSalmoSeleccionado(lecturaActual.salmo);
         setModoEdicion(false);
     };
-
-    const salmoActual = ((lecturaActual.capitulo - 1) % TOTAL_SALMOS) + 1;
 
     if (!isLoaded) return null;
 
@@ -78,9 +79,9 @@ const BiblePreferences = () => {
                                     <BookOpen size={20} className="text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Salmo</p>
+                                    
                                     <p className="text-xl font-bold text-foreground">
-                                        Capítulo <span className="text-primary">{salmoActual}</span>
+                                        Salmo <span className="text-primary">{lecturaActual.salmo}</span>
                                     </p>
                                 </div>
                             </div>
@@ -137,9 +138,26 @@ const BiblePreferences = () => {
                             </div>
                         </div>
 
-                        <p className="text-sm text-muted-foreground">
-                            El salmo se calcula automaticamente en base al capitulo del evangelio.
-                        </p>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">
+                                Salmo
+                            </label>
+                            <Select
+                                value={salmoSeleccionado.toString()}
+                                onValueChange={(value) => setSalmoSeleccionado(Number(value))}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Array.from({ length: TOTAL_SALMOS }, (_, i) => (
+                                        <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                            Salmo {i + 1}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
                         {/* Botones de acción */}
                         <div className="flex items-center justify-end gap-2 pt-2">

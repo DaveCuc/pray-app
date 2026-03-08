@@ -36,6 +36,7 @@ export default function Home() {
         <Evangelio
           libro={lecturaActual.libro}
           capitulo={lecturaActual.capitulo}
+          salmo={lecturaActual.salmo}
           isLoaded={isLoaded}
         />
       </section>
