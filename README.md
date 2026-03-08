@@ -1,6 +1,6 @@
 # Oratio - App de Oracion
 
-Aplicacion web construida con Next.js para acompanar tiempos de oracion diaria.
+Aplicacion web construida con Next.js para acompañar tiempos de oracion diaria.
 
 Incluye:
 
@@ -183,3 +183,8 @@ La app no usa backend actualmente. El estado principal se persiste en el navegad
 - Agregar autenticacion y sincronizacion en la nube.
 - Registrar historial diario de oracion y lecturas.
 - Incluir notificaciones o recordatorios.
+
+
+## Uso de diseños
+Gracias al diseñador de quien tome prestado su diseño en css para mi proyecto no se como se llama pero dejo el enlace del creador
+https://codepen.io/kh-mamun/pen/YLGjvx
