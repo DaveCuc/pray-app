@@ -3,6 +3,7 @@ import ThemeSelector from "./_components/ThemeSelector";
 import TimerPreferences from "./_components/TimerPreferences";
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 
 export default function SettingsPage() {
     return (
@@ -20,7 +21,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="w-10 md:hidden"></div>
             </div>
-            
+
             <hr />
             <ThemeSelector />
             <hr />
@@ -28,6 +29,9 @@ export default function SettingsPage() {
             <hr />
             <BiblePreferences />
             <hr />
+            
+
+
         </div>
     );
 }

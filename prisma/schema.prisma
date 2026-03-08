@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id              String    @id // ID proporcionado por Clerk
+  activeStreak    Int       @default(0)
+  longestStreak   Int       @default(0)
+  totalDays       Int       @default(0)
+  lastPrayerDate  DateTime? @db.Date
+  createdAt       DateTime  @default(now())
+  
+  prayers         Prayer[]
+}
+
+model Prayer {
+  id              String   @id @default(uuid())
+  userId          String
+  durationMinutes Int
+  completedAt     DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
