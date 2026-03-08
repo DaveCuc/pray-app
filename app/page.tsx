@@ -2,7 +2,7 @@
 
 import { usePrayerProgress } from '@/hooks/usePrayerProgress';
 import { useLectura } from '@/hooks/useLectura';
-import Reloj from './_components/Reloj';
+import Reloj from './_components/reloj';
 import Evangelio from './_components/evangelio';
 
 
