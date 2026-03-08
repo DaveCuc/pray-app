@@ -6,6 +6,7 @@ import BottomNav from "./_components/BottomNav";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import LeftNav from "./_components/LeftNav";
 
+
 import { ClerkProvider, SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 
 const geistSans = Geist({
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
 
 import { auth } from "@clerk/nextjs/server";
 import Attention from "./_components/Attention";
+import { PrayerProvider } from "./_context/PrayerContext";
 
 export default async function RootLayout({
   children,
@@ -53,7 +55,9 @@ export default async function RootLayout({
                 </div>
               )}
               <main className="flex-1 min-w-0">
-                {children}
+                <PrayerProvider>
+                  {children}
+                </PrayerProvider>
               </main>
             </div>
             {isSignedIn && <BottomNav />}

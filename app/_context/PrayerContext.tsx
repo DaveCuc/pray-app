@@ -1,5 +1,6 @@
-// hooks/usePrayerProgress.ts
-import { useState, useEffect, useTransition } from 'react';
+'use client';
+
+import { createContext, useContext, useState, useEffect, useTransition, ReactNode } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { getPrayerStats, savePrayerSession } from '@/actions/prayer';
 
@@ -11,57 +12,61 @@ interface PrayerStats {
   isLoading: boolean;
 }
 
-export function usePrayerProgress() {
-  const { isSignedIn } = useAuth();
+interface PrayerContextType {
+  stats: PrayerStats;
+  saveProgress: (duration?: number) => void;
+  isSaving: boolean;
+}
+
+const PrayerContext = createContext<PrayerContextType | null>(null);
+
+export function PrayerProvider({ children }: { children: ReactNode }) {
+  const { isSignedIn, isLoaded } = useAuth();
   const [isPending, startTransition] = useTransition();
-  
-  // INICIALIZACIÓN CON CACHÉ: Leemos el localStorage antes de dibujar el componente
-  const [stats, setStats] = useState<PrayerStats>(() => {
-    // Verificamos que estamos en el navegador (para evitar errores en Next.js SSR)
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('oratio_stats_cache');
-      if (cached) {
-        return { ...JSON.parse(cached), isLoading: false };
-      }
-    }
-    // Si no hay caché, empezamos en 0
-    return {
-      currentStreak: 0,
-      totalDays: 0,
-      longestStreak: 0,
-      completedToday: false,
-      isLoading: true
-    };
+
+  // ESTADO INICIAL ESTÁTICO: Igual para Servidor y Cliente
+  const [stats, setStats] = useState<PrayerStats>({
+    currentStreak: 0,
+    totalDays: 0,
+    longestStreak: 0,
+    completedToday: false,
+    isLoading: true // Esto es clave para ocultarlo en la UI
   });
 
   useEffect(() => {
+    if (!isLoaded) return; 
+
     if (!isSignedIn) {
       setStats(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
+    // LEER CACHÉ DESPUÉS DEL MONTAJE (Evita el error de hidratación)
+    const cached = localStorage.getItem('oratio_stats_cache');
+    if (cached) {
+      // Aplicamos el caché súper rápido sin esperar a la BD
+      setStats({ ...JSON.parse(cached), isLoading: false });
+    }
+
+    // REVALIDAR CON LA BASE DE DATOS
     const loadData = async () => {
       try {
-        // REVALIDACIÓN EN SEGUNDO PLANO: Buscamos el dato real en la BD
         const data = await getPrayerStats();
         if (data) {
           setStats({ ...data, isLoading: false });
-          // ACTUALIZAMOS EL CACHÉ con la información más fresca
           localStorage.setItem('oratio_stats_cache', JSON.stringify(data));
         }
       } catch (error) {
         console.error("Error al cargar rachas:", error);
-        setStats(prev => ({ ...prev, isLoading: false }));
       }
     };
 
     loadData();
-  }, [isSignedIn]);
+  }, [isSignedIn, isLoaded]);
 
   const saveProgress = (duration: number = 20) => {
     if (!isSignedIn) return;
 
-    // Actualización optimista: Reflejamos el cambio en la UI instantáneamente
     setStats(prev => {
       const newStats = {
         ...prev,
@@ -69,13 +74,10 @@ export function usePrayerProgress() {
         totalDays: prev.completedToday ? prev.totalDays : prev.totalDays + 1,
         completedToday: true
       };
-      
-      // GUARDAMOS EN CACHÉ INMEDIATAMENTE al terminar de orar
       localStorage.setItem('oratio_stats_cache', JSON.stringify(newStats));
       return newStats;
     });
 
-    // Enviamos a Supabase silenciosamente
     startTransition(async () => {
       try {
         await savePrayerSession(duration);
@@ -85,5 +87,16 @@ export function usePrayerProgress() {
     });
   };
 
-  return { stats, saveProgress, isSaving: isPending };
+  return (
+    <PrayerContext.Provider value={{ stats, saveProgress, isSaving: isPending }}>
+      {children}
+    </PrayerContext.Provider>
+  );
 }
+
+// Hook personalizado para usar el contexto fácilmente
+export const usePrayer = () => {
+  const context = useContext(PrayerContext);
+  if (!context) throw new Error("usePrayer debe usarse dentro de PrayerProvider");
+  return context;
+};
