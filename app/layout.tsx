@@ -5,7 +5,7 @@ import NavBar from "./_components/Navbar";
 import BottomNav from "./_components/BottomNav";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import LeftNav from "./_components/LeftNav";
-
+import { ReadingProvider } from '@/app/_context/ReadingContext';
 
 import { ClerkProvider, SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 
@@ -56,7 +56,10 @@ export default async function RootLayout({
               )}
               <main className="flex-1 min-w-0">
                 <PrayerProvider>
-                  {children}
+                  <ReadingProvider>
+                    {children}
+
+                  </ReadingProvider>
                 </PrayerProvider>
               </main>
             </div>

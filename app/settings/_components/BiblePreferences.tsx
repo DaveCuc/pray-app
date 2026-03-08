@@ -1,7 +1,7 @@
 'use client';
 
 import { BookOpen, Edit2, Check, X } from 'lucide-react';
-import { useLectura } from '@/hooks/useLectura';
+import { useReading } from '@/app/_context/ReadingContext';
 import { useState, useEffect } from 'react';
 import {
   Select,
@@ -21,20 +21,27 @@ const LIBROS_INFO = {
 };
 
 const BiblePreferences = () => {
-    const { lecturaActual, ajustarLectura, isLoaded, isSaving } = useLectura();
+    const { lecturaActual, ajustarLectura, isSaving } = useReading();
     const [modoEdicion, setModoEdicion] = useState(false);
     const [libroSeleccionado, setLibroSeleccionado] = useState<keyof typeof LIBROS_INFO>('Mateo');
     const [capituloSeleccionado, setCapituloSeleccionado] = useState(1);
     const [salmoSeleccionado, setSalmoSeleccionado] = useState(1);
+    
+    // PATRÓN isMounted (Igual que en Statistics.tsx)
+    const [isMounted, setIsMounted] = useState(false);
 
-    // Sincronizar selectores con la lectura guardada en BD
     useEffect(() => {
-        if (!isLoaded) return;
+        setIsMounted(true);
+    }, []);
 
-        setLibroSeleccionado(lecturaActual.libro as keyof typeof LIBROS_INFO);
-        setCapituloSeleccionado(lecturaActual.capitulo);
-        setSalmoSeleccionado(lecturaActual.salmo);
-    }, [lecturaActual, isLoaded]);
+    useEffect(() => {
+        // Solo sincronizamos si no está cargando
+        if (!lecturaActual.isLoading) {
+            setLibroSeleccionado(lecturaActual.libro as keyof typeof LIBROS_INFO);
+            setCapituloSeleccionado(lecturaActual.capitulo);
+            setSalmoSeleccionado(lecturaActual.salmo);
+        }
+    }, [lecturaActual]);
 
     const handleAjustarLectura = () => {
         ajustarLectura(libroSeleccionado, capituloSeleccionado, salmoSeleccionado);
@@ -42,14 +49,16 @@ const BiblePreferences = () => {
     };
 
     const handleCancelar = () => {
-        // Restaurar valores originales
         setLibroSeleccionado(lecturaActual.libro as keyof typeof LIBROS_INFO);
         setCapituloSeleccionado(lecturaActual.capitulo);
         setSalmoSeleccionado(lecturaActual.salmo);
         setModoEdicion(false);
     };
 
-    if (!isLoaded) return null;
+    // CLASE BASE PARA LA ANIMACIÓN (Igual que en Statistics)
+    const textStyle = `text-xl font-bold text-foreground transition-opacity duration-200 ${
+        !isMounted || lecturaActual.isLoading ? 'opacity-0' : 'opacity-100'
+    }`;
 
     return (
         <section>
@@ -69,8 +78,8 @@ const BiblePreferences = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Evangelio</p>
-                                    <p className="text-xl font-bold text-foreground">
-                                        {lecturaActual.libro} <span className="text-primary">{lecturaActual.capitulo}</span>
+                                    <p className={textStyle}>
+                                        {isMounted ? lecturaActual.libro : 'Mateo'} <span className="text-primary">{isMounted ? lecturaActual.capitulo : 1}</span>
                                     </p>
                                 </div>
                             </div>
@@ -79,9 +88,8 @@ const BiblePreferences = () => {
                                     <BookOpen size={20} className="text-primary" />
                                 </div>
                                 <div>
-                                    
-                                    <p className="text-xl font-bold text-foreground">
-                                        Salmo <span className="text-primary">{lecturaActual.salmo}</span>
+                                    <p className={textStyle}>
+                                        Salmo <span className="text-primary">{isMounted ? lecturaActual.salmo : 1}</span>
                                     </p>
                                 </div>
                             </div>
