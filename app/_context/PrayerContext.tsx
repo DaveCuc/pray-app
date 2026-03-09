@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useTransition, ReactNode } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { getPrayerStats, savePrayerSession } from '@/actions/prayer';
+import { getPrayerStats, savePrayerSession, advancePrayerStep } from '@/actions/prayer';
 
 // 1. AGREGAMOS lastPrayerDate A LA INTERFAZ
 interface PrayerStats {
@@ -10,13 +10,15 @@ interface PrayerStats {
   totalDays: number;
   longestStreak: number;
   completedToday: boolean;
-  lastPrayerDate?: string | null; // <-- Clave para saber cuándo apagar la vela
+  lastPrayerDate?: string | null; 
+  currentStep: number;
   isLoading: boolean;
 }
 
 interface PrayerContextType {
   stats: PrayerStats;
   saveProgress: (duration?: number) => void;
+  avanzarEtapa: () => void;
   isSaving: boolean;
 }
 
@@ -50,7 +52,8 @@ export function PrayerProvider({ children }: { children: ReactNode }) {
     longestStreak: 0,
     completedToday: false,
     lastPrayerDate: null,
-    isLoading: true 
+    isLoading: true ,
+    currentStep: 0,
   });
 
   // ==========================================
@@ -134,8 +137,29 @@ export function PrayerProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // 🔥 NUEVA FUNCIÓN: AVANZAR DE ETAPA
+  const avanzarEtapa = () => {
+    if (!isSignedIn) return;
+
+    setStats(prev => {
+      const nuevaEtapa = prev.currentStep + 1;
+      const newStats = { ...prev, currentStep: nuevaEtapa };
+      localStorage.setItem('oratio_stats_cache', JSON.stringify(newStats));
+      return newStats;
+    });
+
+    startTransition(async () => {
+      try {
+        await advancePrayerStep(stats.currentStep + 1);
+      } catch (error) {
+        console.error("Error al avanzar etapa:", error);
+      }
+    });
+  };
+
+
   return (
-    <PrayerContext.Provider value={{ stats, saveProgress, isSaving: isPending }}>
+    <PrayerContext.Provider value={{ stats, saveProgress, isSaving: isPending, avanzarEtapa }}>
       {children}
     </PrayerContext.Provider>
   );

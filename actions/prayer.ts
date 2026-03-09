@@ -10,11 +10,11 @@ function getStartOfDay(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
+// 1. OBTENER ESTADÍSTICAS (CON LIMPIEZA INTELIGENTE)
 export async function getPrayerStats() {
   const { userId } = await auth();
   if (!userId) return null;
 
-  // Buscar usuario o crearlo si es su primera vez
   let user = await prisma.user.findUnique({ where: { id: userId } });
   
   if (!user) {
@@ -24,21 +24,40 @@ export async function getPrayerStats() {
   const today = getStartOfDay();
   let completedToday = false;
   let currentStreak = user.activeStreak;
+  let currentStep = user.currentStep || 0; 
 
-  // Lógica para detectar si la racha se rompió por inactividad
   if (user.lastPrayerDate) {
     const lastPrayer = getStartOfDay(user.lastPrayerDate);
     const diffDays = Math.floor((today.getTime() - lastPrayer.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
       completedToday = true;
-    } else if (diffDays > 1) {
-      currentStreak = 0; // Pasó más de un día, la racha se rompe
-      // Guardamos la racha rota en la BD silenciosamente
-      await prisma.user.update({
-        where: { id: userId },
-        data: { activeStreak: 0 }
-      });
+    } else {
+      // ES UN DÍA NUEVO
+      let needsUpdate = false;
+      const datosAActualizar: any = {};
+
+      // Limpiamos el paso solo si no está en 0
+      if (currentStep > 0) {
+        currentStep = 0;
+        datosAActualizar.currentStep = 0;
+        needsUpdate = true;
+      }
+
+      // Rompemos la racha solo si pasaron > 1 días y no está en 0
+      if (diffDays > 1 && currentStreak > 0) {
+        currentStreak = 0;
+        datosAActualizar.activeStreak = 0;
+        needsUpdate = true;
+      }
+
+      // Solo escribimos en BD si realmente hubo cambios
+      if (needsUpdate) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: datosAActualizar
+        });
+      }
     }
   }
 
@@ -46,10 +65,27 @@ export async function getPrayerStats() {
     currentStreak,
     totalDays: user.totalDays,
     longestStreak: user.longestStreak,
-    completedToday, // Puedes dejar este por compatibilidad
-    // ✨ EL CAMBIO CRÍTICO: Enviamos la fecha exacta al frontend
-    lastPrayerDate: user.lastPrayerDate ? user.lastPrayerDate.toISOString() : null
+    completedToday,
+    lastPrayerDate: user.lastPrayerDate ? user.lastPrayerDate.toISOString() : null,
+    currentStep // 🔥 Devolvemos la etapa actual al frontend
   };
+}
+
+// 2. NUEVA FUNCIÓN: AVANZAR ETAPA EN LA BD
+export async function advancePrayerStep(newStep: number) {
+  const { userId } = await auth();
+  if (!userId) return { success: false };
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { currentStep: newStep }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error al avanzar etapa:", error);
+    return { success: false };
+  }
 }
 
 export async function savePrayerSession(durationMinutes: number) {
