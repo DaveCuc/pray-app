@@ -1,7 +1,7 @@
 'use client';
 
 import { usePrayer } from '@/app/_context/PrayerContext';
-import { useLectura } from '@/hooks/useLectura';
+import { useReading } from '@/app/_context/ReadingContext';
 import Reloj from '../_components/Reloj';
 import Evangelio from '../_components/Evangelio';
 
@@ -11,7 +11,7 @@ import { Play } from 'lucide-react';
 
 export default function Home() {
   const { stats, saveProgress } = usePrayer();
-  const { lecturaActual, avanzarLectura, isLoaded } = useLectura();
+  const { avanzarLectura } = useReading();
   const router = useRouter();
 
   // Esta función se ejecuta CADA VEZ que termina una fase de 20 min en el Reloj
@@ -45,13 +45,7 @@ export default function Home() {
       </section>
 
       <section className="pb-10">
-
-        <Evangelio
-          libro={lecturaActual.libro}
-          capitulo={lecturaActual.capitulo}
-          salmo={lecturaActual.salmo}
-          isLoaded={isLoaded}
-        />
+        <Evangelio />
       </section>
 
     </div>

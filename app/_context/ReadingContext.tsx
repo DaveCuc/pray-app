@@ -5,6 +5,14 @@ import { useAuth } from '@clerk/nextjs';
 // Ajusta esta importación según cómo se llamen tus Server Actions
 import { getReadingProgress, updateReadingProgress } from '@/actions/reading'; 
 
+const EVANGELIOS = [
+  ...Array.from({ length: 28 }, (_, i) => ({ libro: 'Mateo', capitulo: i + 1 })),
+  ...Array.from({ length: 16 }, (_, i) => ({ libro: 'Marcos', capitulo: i + 1 })),
+  ...Array.from({ length: 24 }, (_, i) => ({ libro: 'Lucas', capitulo: i + 1 })),
+  ...Array.from({ length: 21 }, (_, i) => ({ libro: 'Juan', capitulo: i + 1 })),
+];
+const TOTAL_SALMOS = 150;
+
 interface LecturaStats {
   libro: string;
   capitulo: number;
@@ -14,6 +22,8 @@ interface LecturaStats {
 
 interface ReadingContextType {
   lecturaActual: LecturaStats;
+  avanzarLectura: () => void;
+  reiniciarLectura: () => void;
   ajustarLectura: (libro: string, capitulo: number, salmo: number) => void;
   isSaving: boolean;
 }
@@ -86,8 +96,26 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const avanzarLectura = () => {
+    if (!isSignedIn) return;
+
+    const indiceActual = EVANGELIOS.findIndex(
+      (e) => e.libro === lecturaActual.libro && e.capitulo === lecturaActual.capitulo
+    );
+
+    const nuevoIndice = (indiceActual + 1) % EVANGELIOS.length;
+    const nuevaLectura = EVANGELIOS[nuevoIndice];
+    const nuevoSalmo = (lecturaActual.salmo % TOTAL_SALMOS) + 1;
+
+    ajustarLectura(nuevaLectura.libro, nuevaLectura.capitulo, nuevoSalmo);
+  };
+
+  const reiniciarLectura = () => {
+    ajustarLectura('Mateo', 1, 1);
+  };
+
   return (
-    <ReadingContext.Provider value={{ lecturaActual, ajustarLectura, isSaving: isPending }}>
+    <ReadingContext.Provider value={{ lecturaActual, avanzarLectura, reiniciarLectura, ajustarLectura, isSaving: isPending }}>
       {children}
     </ReadingContext.Provider>
   );

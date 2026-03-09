@@ -1,11 +1,11 @@
 'use client';
 
 import { RotateCcw } from 'lucide-react';
-import { useLectura } from '@/hooks/useLectura';
+import { useReading } from '@/app/_context/ReadingContext';
 
 
 const RestartSection = () => {
-    const { reiniciarLectura, isSaving } = useLectura();
+    const { reiniciarLectura, isSaving } = useReading();
 
     const handleReiniciarLectura = () => {
         const confirmado = window.confirm('¿Estás seguro de reiniciar tus lecturas bíblicas? Esto volverá a Mateo 1.');

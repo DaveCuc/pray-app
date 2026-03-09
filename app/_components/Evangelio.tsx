@@ -5,16 +5,12 @@ import { BookOpen } from 'lucide-react';
 import { useReading } from '@/app/_context/ReadingContext';
 
 const Evangelio = () => {
-const { lecturaActual, ajustarLectura, isSaving } = useReading();  const [isMounted, setIsMounted] = useState(false);
+  const { lecturaActual } = useReading();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  // Función para avanzar al siguiente capítulo
-  const handleAvanzar = () => {
-    ajustarLectura(lecturaActual.libro, lecturaActual.capitulo + 1, lecturaActual.salmo);
-  };
 
   // Protección de hidratación: no renderizar hasta que estemos en el cliente
   if (!isMounted || lecturaActual.isLoading) return null;
