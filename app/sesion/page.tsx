@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { usePrayer } from '@/app/_context/PrayerContext';
 // Asegúrate de importar tus componentes reales
-import Reloj from '@/app/_components/Reloj'; 
-import Evangelio from '@/app/_components/Evangelio'; 
+import Reloj from '@/app/sesion/_components/Reloj'; 
+import Evangelio from '@/app/(main)/_components/Evangelio'; 
 
 export default function SesionPage() {
   const router = useRouter();

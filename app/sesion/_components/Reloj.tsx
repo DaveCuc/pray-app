@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, ArrowRight, Flame } from "lucide-react";
-import Vela from "./Vela";
+import Vela from "../../(main)/_components/Vela";
 
 const FASES = [
   { id: 1, nombre: "Acción de Gracias", duration: 20 },
@@ -176,7 +176,7 @@ const Reloj = ({ onFinish, yaOramosHoy = false }: RelojProps) => {
           <div className="flex gap-6">
             <button
               onClick={togglePlayPause}
-              className="w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-all shadow-lg hover:bg-oratio-gold-hover hover:scale-105"
+              className="w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-all shadow-[0_0_40px_rgba(245,165,36,0.3)] hover:shadow-[0_0_60px_rgba(245,165,36,0.5)] transition-all hover:scale-105"
               style={{ cursor: "pointer" }}
             >
               {isRunning ? (
@@ -191,7 +191,7 @@ const Reloj = ({ onFinish, yaOramosHoy = false }: RelojProps) => {
           faseActual < 2 ? (
             <button
               onClick={handleContinuar}
-              className="flex items-center gap-2 px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold transition-all shadow-lg animate-pulse hover:bg-oratio-gold-hover"
+              className="flex items-center gap-2 px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold transition-all shadow-[0_0_40px_rgba(245,165,36,0.3)] hover:shadow-[0_0_60px_rgba(245,165,36,0.5)] transition-all hover:scale-105"
             >
               Siguiente Fase <ArrowRight size={20} />
             </button>

@@ -1,8 +1,8 @@
-import NavBar from '../_components/Navbar';
-import BottomNav from '../_components/BottomNav';
-import LeftNav from '../_components/LeftNav';
-import SwipeWrapper from '../_components/SwipeWrapper';
-import Attention from '../_components/Attention';
+import NavBar from './_components/Navbar';
+import BottomNav from './_components/BottomNav';
+import LeftNav from './_components/LeftNav';
+import SwipeWrapper from './_components/SwipeWrapper';
+import Attention from './_components/Attention';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (

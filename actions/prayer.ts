@@ -46,7 +46,9 @@ export async function getPrayerStats() {
     currentStreak,
     totalDays: user.totalDays,
     longestStreak: user.longestStreak,
-    completedToday
+    completedToday, // Puedes dejar este por compatibilidad
+    // ✨ EL CAMBIO CRÍTICO: Enviamos la fecha exacta al frontend
+    lastPrayerDate: user.lastPrayerDate ? user.lastPrayerDate.toISOString() : null
   };
 }
 

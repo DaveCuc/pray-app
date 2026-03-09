@@ -4,11 +4,13 @@ import { createContext, useContext, useState, useEffect, useTransition, ReactNod
 import { useAuth } from '@clerk/nextjs';
 import { getPrayerStats, savePrayerSession } from '@/actions/prayer';
 
+// 1. AGREGAMOS lastPrayerDate A LA INTERFAZ
 interface PrayerStats {
   currentStreak: number;
   totalDays: number;
   longestStreak: number;
   completedToday: boolean;
+  lastPrayerDate?: string | null; // <-- Clave para saber cuándo apagar la vela
   isLoading: boolean;
 }
 
@@ -20,19 +22,40 @@ interface PrayerContextType {
 
 const PrayerContext = createContext<PrayerContextType | null>(null);
 
+// 2. FUNCIÓN DE AYUDA CORREGIDA: Ignora las zonas horarias
+const isSameDay = (date1: Date | string | null, date2: Date) => {
+  if (!date1) return false;
+
+  // 1. Extraemos solo la parte "YYYY-MM-DD" del servidor (ej. "2026-03-08")
+  const dateString = typeof date1 === 'string' ? date1 : date1.toISOString();
+  const dbDate = dateString.split('T')[0]; 
+
+  // 2. Formateamos la hora LOCAL del celular al mismo formato "YYYY-MM-DD"
+  const year = date2.getFullYear();
+  const month = String(date2.getMonth() + 1).padStart(2, '0');
+  const day = String(date2.getDate()).padStart(2, '0');
+  const localDate = `${year}-${month}-${day}`;
+
+  // 3. Comparamos los textos directamente (ej. "2026-03-08" === "2026-03-08")
+  return dbDate === localDate;
+};
+
 export function PrayerProvider({ children }: { children: ReactNode }) {
   const { isSignedIn, isLoaded } = useAuth();
   const [isPending, startTransition] = useTransition();
 
-  // ESTADO INICIAL ESTÁTICO: Igual para Servidor y Cliente
   const [stats, setStats] = useState<PrayerStats>({
     currentStreak: 0,
     totalDays: 0,
     longestStreak: 0,
     completedToday: false,
-    isLoading: true // Esto es clave para ocultarlo en la UI
+    lastPrayerDate: null,
+    isLoading: true 
   });
 
+  // ==========================================
+  // MOTOR DE CARGA: Stale-While-Revalidate
+  // ==========================================
   useEffect(() => {
     if (!isLoaded) return; 
 
@@ -41,43 +64,67 @@ export function PrayerProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // LEER CACHÉ DESPUÉS DEL MONTAJE (Evita el error de hidratación)
+    // A) LEER CACHÉ PRIMERO (Milisegundo 1: Datos instantáneos)
     const cached = localStorage.getItem('oratio_stats_cache');
     if (cached) {
-      // Aplicamos el caché súper rápido sin esperar a la BD
-      setStats({ ...JSON.parse(cached), isLoading: false });
+      const parsedCache = JSON.parse(cached);
+      const isLitToday = isSameDay(parsedCache.lastPrayerDate, new Date());
+      setStats({ 
+        ...parsedCache, 
+        completedToday: isLitToday,
+        isLoading: false 
+      });
     }
 
-    // REVALIDAR CON LA BASE DE DATOS
+    // B) REVALIDAR CON LA BD (En segundo plano: Datos frescos del servidor)
     const loadData = async () => {
       try {
         const data = await getPrayerStats();
         if (data) {
-          setStats({ ...data, isLoading: false });
-          localStorage.setItem('oratio_stats_cache', JSON.stringify(data));
+          const isLitToday = isSameDay(data.lastPrayerDate, new Date());
+          const freshData = {
+            ...data,
+            completedToday: isLitToday,
+            isLoading: false
+          };
+          
+          // Actualizar pantalla con datos reales
+          setStats(freshData);
+          
+          // Actualizar caché para la próxima apertura
+          localStorage.setItem('oratio_stats_cache', JSON.stringify(freshData));
         }
       } catch (error) {
         console.error("Error al cargar rachas:", error);
+        setStats(prev => ({ ...prev, isLoading: false }));
       }
     };
 
     loadData();
   }, [isSignedIn, isLoaded]);
 
+  // ==========================================
+  // GUARDADO OPTIMISTA: Velocidad instantánea
+  // ==========================================
   const saveProgress = (duration: number = 20) => {
     if (!isSignedIn) return;
 
+    // A) ACTUALIZAR PANTALLA Y CACHÉ AL INSTANTE (0 milisegundos)
     setStats(prev => {
+      const now = new Date();
       const newStats = {
         ...prev,
         currentStreak: prev.completedToday ? prev.currentStreak : prev.currentStreak + 1,
         totalDays: prev.completedToday ? prev.totalDays : prev.totalDays + 1,
-        completedToday: true
+        completedToday: true,
+        lastPrayerDate: now.toISOString()
       };
+      
       localStorage.setItem('oratio_stats_cache', JSON.stringify(newStats));
       return newStats;
     });
 
+    // B) ENVIAR A LA BD EN SILENCIO (Sin bloquear la app)
     startTransition(async () => {
       try {
         await savePrayerSession(duration);
@@ -94,7 +141,6 @@ export function PrayerProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Hook personalizado para usar el contexto fácilmente
 export const usePrayer = () => {
   const context = useContext(PrayerContext);
   if (!context) throw new Error("usePrayer debe usarse dentro de PrayerProvider");

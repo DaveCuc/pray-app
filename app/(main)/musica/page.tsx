@@ -1,6 +1,6 @@
 import { Music } from 'lucide-react';
 
-import Upcoming from '../../_components/Upcoming';
+import Upcoming from '../_components/Upcoming';
 
 export default function MusicPage() {
   return (

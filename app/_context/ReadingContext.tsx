@@ -34,7 +34,9 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
   const { isSignedIn, isLoaded } = useAuth();
   const [isPending, startTransition] = useTransition();
 
-  // 1. ESTADO INICIAL ESTÁTICO: Oculto por defecto
+  // ==========================================
+  // PASO 1: ESTADO INICIAL (Con bandera de carga)
+  // ==========================================
   const [lecturaActual, setLecturaActual] = useState<LecturaStats>({
     libro: 'Mateo',
     capitulo: 1,
@@ -42,51 +44,62 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
     isLoading: true 
   });
 
+  // ==========================================
+  // PASO 2: MOTOR DE CARGA (Stale-While-Revalidate)
+  // ==========================================
   useEffect(() => {
     if (!isLoaded) return;
+    
     if (!isSignedIn) {
       setLecturaActual(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
-    // 2. LEER CACHÉ AL INSTANTE
+    // A) LEER CACHÉ PRIMERO (Milisegundo 1: Datos instantáneos)
     const cached = localStorage.getItem('oratio_lectura_cache');
     if (cached) {
       setLecturaActual({ ...JSON.parse(cached), isLoading: false });
     }
 
-    // 3. REVALIDAR EN SEGUNDO PLANO
+    // B) REVALIDAR CON LA BD (En segundo plano: Datos frescos del servidor)
     const loadData = async () => {
       try {
         const data = await getReadingProgress();
         if (data) {
-          // Asegúrate de mapear bien los nombres que vienen de tu BD
           const newData = { 
             libro: data.currentBook || 'Mateo', 
             capitulo: data.currentChapter || 1, 
             salmo: data.currentPsalm || 1, 
             isLoading: false 
           };
+          
+          // Actualizar pantalla con datos reales
           setLecturaActual(newData);
+          
+          // Actualizar caché para la próxima apertura
           localStorage.setItem('oratio_lectura_cache', JSON.stringify(newData));
         }
       } catch (error) {
         console.error("Error al cargar lectura:", error);
+        setLecturaActual(prev => ({ ...prev, isLoading: false }));
       }
     };
 
     loadData();
   }, [isSignedIn, isLoaded]);
 
+  // ==========================================
+  // PASO 3: GUARDADO OPTIMISTA (Velocidad instantánea)
+  // ==========================================
   const ajustarLectura = (libro: string, capitulo: number, salmo: number) => {
     if (!isSignedIn) return;
 
-    // Actualización optimista y guardado en caché instantáneo
+    // A) ACTUALIZAR PANTALLA Y CACHÉ AL INSTANTE (0 milisegundos)
     const nuevaLectura = { libro, capitulo, salmo, isLoading: false };
     setLecturaActual(nuevaLectura);
     localStorage.setItem('oratio_lectura_cache', JSON.stringify(nuevaLectura));
 
-    // Guardado silencioso en BD
+    // B) ENVIAR A LA BD EN SILENCIO (Sin bloquear la app)
     startTransition(async () => {
       try {
         await updateReadingProgress(libro, capitulo, salmo);
