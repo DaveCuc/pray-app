@@ -3,7 +3,7 @@ import UserCard from './_components/UserCard';
 import Link from 'next/link';
 
 import { Settings } from 'lucide-react';
-import Upcoming from '../_components/Upcoming';
+import Upcoming from '../../_components/Upcoming';
 import Statistics from './_components/Statistics';
 
 export default function ProfilePage() {

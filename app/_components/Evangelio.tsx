@@ -43,13 +43,7 @@ const { lecturaActual, ajustarLectura, isSaving } = useReading();  const [isMoun
       </div>
 
       {/* Botón para avanzar lectura */}
-      <button 
-        onClick={handleAvanzar}
-        disabled={isSaving}
-        className="w-full px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition disabled:opacity-50"
-      >
-        {isSaving ? 'Guardando...' : 'Avanzar Lectura'}
-      </button>
+      
     </div>
   );
 };

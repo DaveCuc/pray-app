@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "./_components/Navbar";
-import BottomNav from "./_components/BottomNav";
-import { ThemeProvider } from "@/components/ui/theme-provider";
-import LeftNav from "./_components/LeftNav";
 import { ReadingProvider } from '@/app/_context/ReadingContext';
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
-import { ClerkProvider, SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,8 +21,6 @@ export const metadata: Metadata = {
   description: "A simple prayer app",
 };
 
-import { auth } from "@clerk/nextjs/server";
-import Attention from "./_components/Attention";
 import { PrayerProvider } from "./_context/PrayerContext";
 
 export default async function RootLayout({
@@ -33,37 +28,21 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { userId } = await auth();
-  const isSignedIn = !!userId;
-
   return (
     <ClerkProvider>
       <html lang="es" suppressHydrationWarning>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased pb-24`}>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
-            {isSignedIn && <NavBar />}
-            <Attention />
-            <div className="md:flex md:min-h-[calc(100vh-4rem)]">
-              {isSignedIn && (
-                <div className="hidden md:block md:w-72 border-r border-border bg-muted/20">
-                  <LeftNav />
-                </div>
-              )}
-              <main className="flex-1 min-w-0">
-                <PrayerProvider>
-                  <ReadingProvider>
-                    {children}
-
-                  </ReadingProvider>
-                </PrayerProvider>
-              </main>
-            </div>
-            {isSignedIn && <BottomNav />}
+            <PrayerProvider>
+              <ReadingProvider>
+                {children}
+              </ReadingProvider>
+            </PrayerProvider>
           </ThemeProvider>
         </body>
       </html>
