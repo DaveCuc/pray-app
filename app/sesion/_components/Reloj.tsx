@@ -7,7 +7,7 @@ import Vela from "../../(main)/_components/Vela"; // Ajusta tu ruta si es necesa
 import { usePrayer } from "@/app/_context/PrayerContext"; // 🔥 IMPORTAMOS NUESTRO CONTEXTO
 
 const FASES = [
-  { id: 1, nombre: "Acción de Gracias", duration: 1 },
+  { id: 1, nombre: "Acción de Gracias", duration: 20 },
   { id: 2, nombre: "Alabanza", duration: 20 },
   { id: 3, nombre: "Espíritu Santo", duration: 20 },
 ];
