@@ -9,7 +9,7 @@ import Evangelio from '@/app/(main)/_components/Evangelio';
 
 export default function SesionPage() {
   const router = useRouter();
-  const { stats, saveProgress } = usePrayer();
+  const { saveProgress } = usePrayer();
 
   const handleFaseCompletada = () => {
     saveProgress();
@@ -35,7 +35,7 @@ export default function SesionPage() {
         
         {/* Aquí va tu componente del Reloj (que ya tiene la vela) */}
         <div className="w-full flex justify-center">
-          <Reloj onFinish={handleFaseCompletada} yaOramosHoy={stats.completedToday} />
+          <Reloj onFinish={handleFaseCompletada} />
         </div>
 
         {/* Separador elegante */}
