@@ -1,31 +1,45 @@
 # Oratio - App de Oracion
 
-Aplicacion web construida con Next.js para acompañar tiempos de oracion diaria.
+Aplicacion web construida con Next.js (App Router) para acompanar tiempos de oracion diaria con enfoque inmersivo.
 
-Incluye:
+## Novedades Recientes
+
+- Arquitectura con `Route Groups`:
+  - `app/(main)` contiene las pantallas principales con navegacion y swipe.
+  - `app/sesion` queda aislada, sin barras ni gestos globales, para modo concentracion.
+- Providers globales en `app/layout.tsx`:
+  - `ClerkProvider`
+  - `ThemeProvider`
+  - `PrayerProvider`
+  - `ReadingProvider`
+- Estado global para racha y lectura mediante Context API.
+- Cache local inmediata + revalidacion en segundo plano con base de datos.
+
+## Funcionalidades
 
 - Temporizador por fases de oracion.
-- Seguimiento de racha y dias totales.
-- Lectura progresiva de Evangelios y Salmos.
-- Seccion de musica de apoyo.
-- Preferencias de apariencia (claro/oscuro/sistema).
+- Seguimiento de racha diaria y dias totales.
+- Lectura progresiva de Evangelio y Salmo.
+- Modo concentracion en `/sesion`.
+- Ajustes de tema (claro/oscuro/sistema).
+- Pantallas de musica, perfil y configuracion.
 
 ## Tecnologias
 
-- Next.js (App Router)
-- React
+- Next.js 16 (App Router)
+- React 19
 - TypeScript
 - Tailwind CSS
 - shadcn/ui
-- next-themes
 - Framer Motion
-- lucide-react
-- Prisma
+- Clerk (autenticacion)
+- Prisma + Neon/PostgreSQL
 
 ## Requisitos
 
 - Node.js 18 o superior
 - npm
+- Variables de entorno configuradas para Clerk y base de datos
 
 ## Instalacion y ejecucion
 
@@ -35,187 +49,92 @@ Incluye:
 npm install
 ```
 
-2. Inicia el servidor de desarrollo:
+2. Ejecuta migraciones/generacion de Prisma (si aplica en tu entorno):
+
+```bash
+npx prisma generate
+```
+
+3. Inicia en desarrollo:
 
 ```bash
 npm run dev
 ```
 
-3. Abre en tu navegador:
+4. Abre:
 
 ```text
 http://localhost:3000
 ```
 
-## Scripts disponibles
+## Scripts Disponibles
 
-- `npm run dev`: inicia la app en modo desarrollo.
-- `npm run build`: genera la version de produccion.
-- `npm run start`: levanta la app compilada.
-- `npm run lint`: ejecuta eslint.
+- `npm run dev`: desarrollo
+- `npm run build`: build de produccion
+- `npm run start`: ejecutar build
+- `npm run lint`: analisis con ESLint
 
-## Como funciona el programa
-
-### 1) Pantalla de Inicio (`/`)
-
-La pantalla principal integra dos bloques:
-
-- `Reloj`: temporizador de oracion por fases.
-- `Evangelio`: lectura del dia (Evangelio + Salmo).
-
-Cuando una fase termina en el reloj, se dispara `handleFaseCompletada` en `app/page.tsx`, que ejecuta:
-
-- `saveProgress()` del hook `usePrayerProgress`.
-- `avanzarLectura()` del hook `useLectura`.
-
-Eso significa que al completar una fase:
-
-- Se actualiza la racha diaria.
-- Se avanza 1 posicion en la lectura biblica.
-
-### 2) Logica de racha y progreso (`hooks/usePrayerProgress.ts`)
-
-Este hook guarda y recupera datos desde `localStorage` usando la clave `prayer-progress`.
-
-Datos que mantiene:
-
-- `currentStreak`: dias seguidos orando.
-- `totalDays`: total historico de dias completados.
-- `lastDate`: ultima fecha registrada.
-- `completedToday`: indica si ya se completo hoy.
-
-Comportamiento:
-
-- Al cargar, si pasaron mas de 1 dia desde `lastDate`, la racha se reinicia.
-- Al guardar progreso en el dia actual, no duplica el conteo.
-
-### 3) Logica de lectura (`hooks/useLectura.ts`)
-
-El indice de lectura se almacena en `localStorage` con la clave `oratio-lectura`.
-
-Funciones disponibles:
-
-- `avanzarLectura()`: incrementa el indice en 1 (se ejecuta al completar una fase de oracion).
-- `reiniciarLectura()`: reinicia el indice a 0 (vuelve a Mateo 1 y Salmo 1).
-- `ajustarLectura(nuevoIndice)`: permite establecer manualmente el punto de inicio de las lecturas.
-
-Con ese indice, el componente `Evangelio` calcula:
-
-- Evangelio actual dentro de una secuencia continua:
-	- Mateo (28 capitulos)
-	- Marcos (16 capitulos)
-	- Lucas (24 capitulos)
-	- Juan (21 capitulos)
-- Salmo del dia entre 1 y 150.
-
-Ambas lecturas avanzan ciclicamente con el operador modulo.
-
-### 4) Temporizador por fases (`app/_components/reloj.tsx`)
-
-El reloj trabaja en 3 fases secuenciales:
-
-- Accion de Gracias
-- Alabanza
-- Espiritu Santo
-
-Cada fase tiene una duracion configurada en la constante `FASES`.
-
-Flujo:
-
-- Boton Play/Pause para iniciar o pausar.
-- Boton Reset para volver al inicio de la fase.
-- Al terminar una fase:
-	- Se muestra estado completado.
-	- Si no es la ultima, aparece `Siguiente Fase`.
-	- Si es la ultima, muestra `Oracion Completada`.
-
-Visualmente incluye:
-
-- Barra/circulo de progreso.
-- Animaciones con Framer Motion.
-- Vela encendida cuando la fase se completa o cuando ya se oro ese dia.
-
-### 5) Pantalla de Musica (`/musica`)
-
-Contiene dos modulos:
-
-- `PlataformasMusica`: accesos directos a Spotify y YouTube Music.
-- `SugerenciasMusica`: ideas de busqueda musical para oracion.
-
-### 6) Pantalla de Perfil (`/perfil`)
-
-Incluye:
-
-- `UserCard`: informacion del usuario con Clerk.
-- `Statistics`: muestra estadisticas de racha y dias totales.
-- `Upcoming`: proximas funcionalidades.
-
-### 7) Pantalla de Ajustes (`/settings`)
-
-Accesible desde el perfil, permite configurar:
-
-- `ThemeSelector`: cambia entre tema claro, oscuro o del sistema.
-- `TimerPreferences`: guarda preferencia de meta (20/40/60 minutos) en `localStorage` con la clave `oratio-tiempo-pref`.
-- `BiblePreferences`: ajusta el punto de inicio de las lecturas biblicas (libro del evangelio, capitulo y salmo). Incluye interfaz con selects de shadcn/ui y modo de edicion activado con boton de lapiz.
-- `RestartSection`: reinicia las lecturas al inicio (Mateo 1 y Salmo 1).
-
-Nota: actualmente la preferencia de temporizador se guarda y se muestra en ajustes, pero no modifica aun la duracion real del componente `Reloj`.
-
-### 8) Navegacion y layout global
-
-Desde `app/layout.tsx` se configuran:
-
-- `ThemeProvider` para soporte de temas.
-- Navegacion inferior (`BottomNav`) con rutas:
-	- Inicio (`/`)
-	- Musica (`/musica`)
-	- Perfil (`/perfil`)
-	- Settings (`/settings`) - accesible desde el perfil
-
-Diseño responsive: las pantallas de perfil y settings se muestran centradas con ancho maximo de 768px en escritorio, mejorando la legibilidad.
-
-## Estructura base del proyecto
+## Arquitectura de Rutas (Actual)
 
 ```text
 app/
-	page.tsx
-	musica/page.tsx
-	perfil/page.tsx
-	settings/page.tsx
-	_components/
-		Reloj.tsx
-		Evangelio.tsx
-		BottomNav.tsx
-		...
-	(auth)/
-hooks/
-	usePrayerProgress.ts
-	useLectura.ts
-components/
-	ui/
-		button.tsx
-		select.tsx
-		theme-provider.tsx
-prisma/
-	schema.prisma
+  layout.tsx                # Root layout: providers globales
+  (main)/
+    layout.tsx              # NavBar + LeftNav + BottomNav + SwipeWrapper
+    page.tsx                # Inicio
+    musica/page.tsx
+    perfil/page.tsx
+    settings/page.tsx
+  sesion/page.tsx           # Modo concentracion (inmersivo)
+  (auth)/...
+  _components/
+  _context/
 ```
 
-## Persistencia de datos locales
+## Flujo de Racha (Prayer)
 
-La app no usa backend actualmente. El estado principal se persiste en el navegador con `localStorage`:
+- Contexto: `app/_context/PrayerContext.tsx`
+- Acciones servidor: `actions/prayer.ts`
+- UI de racha: `app/_components/StreakDisplay.tsx`
 
-- `prayer-progress`: racha y dias completados.
-- `oratio-lectura`: indice de lectura biblica.
-- `oratio-tiempo-pref`: preferencia de tiempo en perfil.
+Comportamiento:
 
-## Proximas mejoras sugeridas
+- Lee cache local (`oratio_stats_cache`) al montar en cliente.
+- Revalida con BD via `getPrayerStats()`.
+- Al completar sesion, hace actualizacion optimista y persiste con `savePrayerSession()`.
+- `completedToday` controla vela/estado activo del dia.
 
-- Conectar `TimerPreferences` con el `Reloj` para ajustar fases segun la meta elegida.
-- Registrar historial diario de oracion y lecturas.
-- Incluir notificaciones o recordatorios.
-- Sincronizacion de progreso en la nube con Prisma.
+## Flujo de Lectura (Evangelio + Salmo)
 
+- Contexto: `app/_context/ReadingContext.tsx`
+- Acciones servidor: `actions/reading.ts`
 
-## Uso de diseños
-Gracias al diseñador de quien tome prestado su diseño en css para mi proyecto no se como se llama pero dejo el enlace del creador
+Comportamiento:
+
+- Cache local (`oratio_lectura_cache`) para carga instantanea.
+- Revalidacion con `getReadingProgress()`.
+- Guardado optimista con `ajustarLectura()` + persistencia en BD con `updateReadingProgress()`.
+
+## Modo Concentracion (`/sesion`)
+
+- No renderiza barras de navegacion ni swipe global.
+- Incluye boton salir, reloj y lectura del dia.
+- Guarda racha al completar fase del reloj.
+
+## Persistencia
+
+La app usa dos capas:
+
+- Base de datos (Prisma): estado canonical de usuario (racha y lectura).
+- `localStorage`: cache visual para evitar esperas y mejorar UX.
+
+Claves usadas actualmente:
+
+- `oratio_stats_cache`
+- `oratio_lectura_cache`
+- `oratio-tiempo-pref`
+
+## Creditos de Diseno
+
+Referencia visual usada como inspiracion:
 https://codepen.io/kh-mamun/pen/YLGjvx
