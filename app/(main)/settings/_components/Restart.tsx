@@ -1,17 +1,23 @@
 'use client';
 
+import { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { useReading } from '@/app/_context/ReadingContext';
+import Alert from '@/app/_components/Alert';
 
 
 const RestartSection = () => {
     const { reiniciarLectura, isSaving } = useReading();
+    const [mostrarAlerta, setMostrarAlerta] = useState(false);
+
+    const mensajeReinicio = '¿Estás seguro de reiniciar tus lecturas bíblicas? Esto volverá a Mateo 1.';
+
+    const ejecutarAccion = () => {
+        reiniciarLectura();
+    };
 
     const handleReiniciarLectura = () => {
-        const confirmado = window.confirm('¿Estás seguro de reiniciar tus lecturas bíblicas? Esto volverá a Mateo 1.');
-        if (confirmado) {
-            reiniciarLectura();
-        }
+        setMostrarAlerta(true);
     };
 
     return (
@@ -38,6 +44,17 @@ const RestartSection = () => {
                     
                 </button>
             </div>
+
+            <Alert
+                isOpen={mostrarAlerta}
+                onClose={() => setMostrarAlerta(false)}
+                onConfirm={ejecutarAccion}
+                titulo="¿Estás seguro?"
+                mensaje={mensajeReinicio}
+                tipo="peligro"
+                textoConfirmar="Confirmar"
+                textoCancelar="Cancelar"
+            />
         </section>
         </section >
     );

@@ -3,7 +3,7 @@ const VersionApp = () => {
         <div className="text-center">
             Version
             <br />
-             "Beta" 1.0.12
+             "Beta" 1.0.13
         </div>
      );
 }

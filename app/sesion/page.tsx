@@ -5,25 +5,27 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import RelojSection from './_components/RelojSection'; 
 import EvangelioCaps from './_components/EvangelioCaps'; 
+import Alert from '@/app/_components/Alert';
 
 export default function SesionPage() {
   const router = useRouter();
   
   // 🔥 NUEVO ESTADO: Controla si ya se acabaron todas las fases
   const [cicloCompletado, setCicloCompletado] = useState(false);
+  const [mostrarAlertaSalir, setMostrarAlertaSalir] = useState(false);
+
+  const mensajeSalir =
+    '¡Espera, no te vayas! Perderás tu progreso si te rindes ahora';
+
+  const ejecutarSalida = () => {
+    // Limpiamos los cachés temporales de pasos Y lecturas
+    localStorage.removeItem('oratio_session_step');
+    localStorage.removeItem('oratio_lectura_local');
+    router.push('/');
+  };
 
   const handleTerminar = () => {
-    // Alerta antes de salir
-    const confirmar = window.confirm(
-      "¿Estás seguro de que quieres salir? Tu progreso y lecturas de esta sesión no se guardarán."
-    );
-    
-    if (confirmar) {
-      // Limpiamos los cachés temporales de pasos Y lecturas
-      localStorage.removeItem('oratio_session_step');
-      localStorage.removeItem('oratio_lectura_local');
-      router.push('/');
-    }
+    setMostrarAlertaSalir(true);
   };
 
   return (
@@ -54,6 +56,17 @@ export default function SesionPage() {
         )}
 
       </div>
+
+      <Alert
+        isOpen={mostrarAlertaSalir}
+        onClose={() => setMostrarAlertaSalir(false)}
+        onConfirm={ejecutarSalida}
+       
+        mensaje={mensajeSalir}
+        tipo="funny" 
+        textoConfirmar="Confirmar"
+        textoCancelar="Cancelar"
+      />
     </div>
   );
 }
