@@ -4,16 +4,16 @@ import { useState, useEffect } from "react";
 import { Play, Pause, Flame, ArrowRight, CheckCircle2 } from "lucide-react";
 import { usePrayer } from "@/app/_context/PrayerContext";
 import { useReading } from "@/app/_context/ReadingContext";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 
 import VelaOnOff from "./VelaOnOff";
 import IndicadoresFases from "./IndicadoresFases";
-import Reloj from "./Reloj"; 
+import Reloj from "./Reloj";
 
 const FASES_BASE = [
-  { id: 1, nombre: "Acción de Gracias", duration: 1 },
-  { id: 2, nombre: "Alabanza", duration: 1 },
-  { id: 3, nombre: "Espíritu Santo", duration: 1 },
+  { id: 1, nombre: "Acción de Gracias", duration: 20 },
+  { id: 2, nombre: "Alabanza", duration: 20 },
+  { id: 3, nombre: "Espíritu Santo", duration: 20 },
 ];
 
 interface RelojSectionProps {
@@ -22,7 +22,7 @@ interface RelojSectionProps {
 
 export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
   const router = useRouter();
-  
+
   // Solo necesitamos saveProgress del contexto para el FINAL
   const { stats, saveProgress } = usePrayer();
   const { avanzarLecturaLocal, guardarLecturaDB } = useReading();
@@ -30,14 +30,14 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
   // ESTADOS DEL PADRE
   const [fasesActivas, setFasesActivas] = useState(FASES_BASE);
   const [modoZen, setModoZen] = useState(false);
-  
+
   // 🔥 ESTADO LOCAL DE LA SESIÓN (Reemplaza a la base de datos)
-  const [faseActual, setFaseActual] = useState(0); 
-  
+  const [faseActual, setFaseActual] = useState(0);
+
   const [minutes, setMinutes] = useState(20);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  
+
   const [faseCompletadaLocal, setFaseCompletadaLocal] = useState(false);
   const [autoIniciado, setAutoIniciado] = useState(false);
   const [faseInicializada, setFaseInicializada] = useState(-1);
@@ -146,7 +146,7 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
 
   const handleContinuarFase = () => {
     const siguienteFase = faseActual + 1;
-    
+
     // Guardamos en caché local para que sobreviva a un refresh accidental F5
     localStorage.setItem('oratio_session_step', siguienteFase.toString());
     setFaseActual(siguienteFase);
@@ -158,7 +158,7 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
     }
 
     setFaseCompletadaLocal(false);
-    setIsRunning(true); 
+    setIsRunning(true);
   };
 
   // 🔥 EL ÚNICO MOMENTO DONDE HABLAMOS CON LA BASE DE DATOS 🔥
@@ -183,29 +183,27 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
 
   return (
     <div className="flex flex-col items-center justify-center w-full min-h-[400px] relative">
-      
+
       {/* SECCIÓN 1: VELA (Animación fluida de 1 segundo) */}
-      <div 
-        className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 ease-in-out ${
-          modoZen ? "scale-150 z-50 cursor-pointer" : "scale-125 z-0"
-        }`}
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 ease-in-out ${modoZen ? "scale-150 z-50 cursor-pointer" : "scale-125 z-0"
+          }`}
         onClick={modoZen ? toggleZen : undefined}
       >
         <div className={`absolute inset-0 bg-black/40 rounded-full blur-3xl transition-opacity duration-1000 ease-in-out ${modoZen ? "opacity-100" : "opacity-0"}`} />
-        <VelaOnOff forceLit={modoZen} /> 
+        <VelaOnOff forceLit={modoZen} />
       </div>
 
       {/* SECCIÓN 2: INTERFAZ COMPLETA (Con Delay en secuencia) */}
-      <div 
-        className={`w-full flex flex-col items-center z-10 transition-all duration-1000 ease-in-out ${
-          modoZen
+      <div
+        className={`w-full flex flex-col items-center z-10 transition-all duration-1000 ease-in-out ${modoZen
             ? "opacity-0 pointer-events-none scale-95 delay-0"
             : "opacity-100 scale-100 delay-[800ms]"
-        }`}
+          }`}
       >
-        
+
         {/* INDICADORES */}
-        <IndicadoresFases 
+        <IndicadoresFases
           fases={fasesActivas}
           faseActual={faseActual}
           todoCompletado={todoCompletado}
@@ -213,7 +211,7 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
 
         {/* RELOJ O MENSAJE FINAL */}
         {!todoCompletado ? (
-          <Reloj 
+          <Reloj
             minutes={minutes}
             seconds={seconds}
             faseNombre={fasesActivas[faseActual]?.nombre || ""}
@@ -232,7 +230,7 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
         {/* CONTROLES DE BOTONES */}
         <div className="h-20 flex items-center justify-center mt-4">
           {!todoCompletado && !faseCompletadaLocal && (
-            <button 
+            <button
               onClick={togglePlayPause}
               className="w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:scale-105 transition-all shadow-[0_0_40px_rgba(245,165,36,0.3)]"
             >
@@ -241,7 +239,7 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
           )}
 
           {!todoCompletado && faseCompletadaLocal && (
-            <button 
+            <button
               onClick={handleContinuarFase}
               className="flex items-center gap-2 px-8 py-4 rounded-full bg-primary text-primary-foreground font-bold hover:scale-105 transition-all shadow-[0_0_40px_rgba(245,165,36,0.3)]"
             >
@@ -250,10 +248,9 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
           )}
 
           {todoCompletado && (
-            <button 
+            <button
               onClick={handleFinalizarSesion}
-              className="flex items-center gap-2 px-8 py-4 rounded-full bg-green-500 text-white font-bold hover:scale-105 transition-all shadow-[0_0_40px_rgba(34,197,94,0.3)]"
-            >
+              className="group relative flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground text-xl font-bold rounded-full shadow-[0_0_40px_rgba(245,165,36,0.3)] hover:shadow-[0_0_60px_rgba(245,165,36,0.5)] transition-all hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"            >
               <CheckCircle2 size={20} /> Finalizar Sesión
             </button>
           )}
