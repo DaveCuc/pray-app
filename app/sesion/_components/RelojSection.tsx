@@ -130,10 +130,16 @@ export default function RelojSection({ onCicloTerminado }: RelojSectionProps) {
     return () => clearInterval(interval);
   }, [isRunning, minutes, seconds, faseActual, fasesActivas.length, avanzarLecturaLocal, onCicloTerminado]);
 
-  // 6. PAUSAR AL CAMBIAR DE PESTAÑA
+    // 6. PAUSAR AL CAMBIAR DE PESTAÑA Y QUITAR MODO ZEN
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && isRunning) setIsRunning(false);
+        // Si el usuario oculta la pestaña (se va a otra app o pestaña)
+        if (document.hidden) {
+          if (isRunning) {
+            setIsRunning(false); // Pausamos el tiempo
+          }
+          setModoZen(false); // Forzamos la salida del Modo Zen para que vea los controles
+        }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
