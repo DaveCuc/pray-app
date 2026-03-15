@@ -47,6 +47,12 @@ export async function updateReadingProgress(book: string, chapter: number, psalm
       currentChapter: chapter,
       currentPsalm: psalm,
     },
+    select: {
+      id: true,
+      currentBook: true,
+      currentChapter: true,
+      currentPsalm: true,
+    },
   });
 
   // Refrescamos la página inicial para que muestre el nuevo capítulo

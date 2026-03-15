@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useTransition, ReactNode } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { getPrayerStats, savePrayerSession, advancePrayerStep } from '@/actions/prayer';
+import { getPrayerStats, savePrayerSession } from '@/actions/prayer';
 
 // 1. AGREGAMOS lastPrayerDate A LA INTERFAZ
 interface PrayerStats {
@@ -11,14 +11,12 @@ interface PrayerStats {
   longestStreak: number;
   completedToday: boolean;
   lastPrayerDate?: string | null; 
-  currentStep: number;
   isLoading: boolean;
 }
 
 interface PrayerContextType {
   stats: PrayerStats;
   saveProgress: (duration?: number) => void;
-  avanzarEtapa: () => void;
   isSaving: boolean;
 }
 
@@ -53,7 +51,6 @@ export function PrayerProvider({ children }: { children: ReactNode }) {
     completedToday: false,
     lastPrayerDate: null,
     isLoading: true ,
-    currentStep: 0,
   });
 
   // ==========================================
@@ -85,17 +82,23 @@ export function PrayerProvider({ children }: { children: ReactNode }) {
         const data = await getPrayerStats();
         if (data) {
           const isLitToday = isSameDay(data.lastPrayerDate, new Date());
-          const freshData = {
-            ...data,
-            completedToday: isLitToday,
-            isLoading: false
-          };
-          
-          // Actualizar pantalla con datos reales
-          setStats(freshData);
-          
-          // Actualizar caché para la próxima apertura
-          localStorage.setItem('oratio_stats_cache', JSON.stringify(freshData));
+          let freshDataForCache: PrayerStats | null = null;
+
+          setStats(prev => {
+            const freshData: PrayerStats = {
+              ...prev,
+              ...data,
+              completedToday: isLitToday,
+              isLoading: false
+            };
+            freshDataForCache = freshData;
+            return freshData;
+          });
+
+          if (freshDataForCache) {
+            // Actualizar caché para la próxima apertura
+            localStorage.setItem('oratio_stats_cache', JSON.stringify(freshDataForCache));
+          }
         }
       } catch (error) {
         console.error("Error al cargar rachas:", error);
@@ -112,13 +115,19 @@ export function PrayerProvider({ children }: { children: ReactNode }) {
   const saveProgress = (duration: number = 20) => {
     if (!isSignedIn) return;
 
+    // CANDADO 1: Evitar doble ejecución en el mismo día
+    if (stats.completedToday) {
+      console.log("Ya oraste hoy. No se sumará doble racha.");
+      return;
+    }
+
     // A) ACTUALIZAR PANTALLA Y CACHÉ AL INSTANTE (0 milisegundos)
     setStats(prev => {
       const now = new Date();
       const newStats = {
         ...prev,
-        currentStreak: prev.completedToday ? prev.currentStreak : prev.currentStreak + 1,
-        totalDays: prev.completedToday ? prev.totalDays : prev.totalDays + 1,
+        currentStreak: prev.currentStreak + 1,
+        totalDays: prev.totalDays + 1,
         completedToday: true,
         lastPrayerDate: now.toISOString()
       };
@@ -137,29 +146,9 @@ export function PrayerProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // 🔥 NUEVA FUNCIÓN: AVANZAR DE ETAPA
-  const avanzarEtapa = () => {
-    if (!isSignedIn) return;
-
-    setStats(prev => {
-      const nuevaEtapa = prev.currentStep + 1;
-      const newStats = { ...prev, currentStep: nuevaEtapa };
-      localStorage.setItem('oratio_stats_cache', JSON.stringify(newStats));
-      return newStats;
-    });
-
-    startTransition(async () => {
-      try {
-        await advancePrayerStep(stats.currentStep + 1);
-      } catch (error) {
-        console.error("Error al avanzar etapa:", error);
-      }
-    });
-  };
-
 
   return (
-    <PrayerContext.Provider value={{ stats, saveProgress, isSaving: isPending, avanzarEtapa }}>
+    <PrayerContext.Provider value={{ stats, saveProgress, isSaving: isPending }}>
       {children}
     </PrayerContext.Provider>
   );

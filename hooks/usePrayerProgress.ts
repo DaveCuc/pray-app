@@ -63,10 +63,13 @@ export function usePrayerProgress() {
 
     // Actualización optimista: Reflejamos el cambio en la UI instantáneamente
     setStats(prev => {
+      const nuevaRacha = prev.completedToday ? prev.currentStreak : prev.currentStreak + 1;
+      const nuevosDias = prev.completedToday ? prev.totalDays : prev.totalDays + 1;
+
       const newStats = {
         ...prev,
-        currentStreak: prev.completedToday ? prev.currentStreak : prev.currentStreak + 1,
-        totalDays: prev.completedToday ? prev.totalDays : prev.totalDays + 1,
+        currentStreak: nuevaRacha,
+        totalDays: nuevosDias,
         completedToday: true
       };
       

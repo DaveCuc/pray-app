@@ -22,6 +22,8 @@ interface LecturaStats {
 
 interface ReadingContextType {
   lecturaActual: LecturaStats;
+  avanzarLecturaLocal: () => void;
+  guardarLecturaDB: () => Promise<void>;
   avanzarLectura: () => void;
   reiniciarLectura: () => void;
   ajustarLectura: (libro: string, capitulo: number, salmo: number) => void;
@@ -33,6 +35,7 @@ const ReadingContext = createContext<ReadingContextType | null>(null);
 export function ReadingProvider({ children }: { children: ReactNode }) {
   const { isSignedIn, isLoaded } = useAuth();
   const [isPending, startTransition] = useTransition();
+  const LOCAL_READING_KEY = 'oratio_lectura_local';
 
   // ==========================================
   // PASO 1: ESTADO INICIAL (Con bandera de carga)
@@ -55,13 +58,20 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // A) LEER CACHÉ PRIMERO (Milisegundo 1: Datos instantáneos)
+    // A) LEER CACHÉ TEMPORAL LOCAL (si hay progreso no sincronizado)
+    const localReading = localStorage.getItem(LOCAL_READING_KEY);
+    if (localReading) {
+      setLecturaActual({ ...JSON.parse(localReading), isLoading: false });
+      return;
+    }
+
+    // B) LEER CACHÉ PERSISTENTE (Milisegundo 1: Datos instantáneos)
     const cached = localStorage.getItem('oratio_lectura_cache');
     if (cached) {
       setLecturaActual({ ...JSON.parse(cached), isLoading: false });
     }
 
-    // B) REVALIDAR CON LA BD (En segundo plano: Datos frescos del servidor)
+    // C) REVALIDAR CON LA BD (En segundo plano: Datos frescos del servidor)
     const loadData = async () => {
       try {
         const data = await getReadingProgress();
@@ -91,6 +101,57 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
   // ==========================================
   // PASO 3: GUARDADO OPTIMISTA (Velocidad instantánea)
   // ==========================================
+  const avanzarLecturaLocal = () => {
+    if (!isSignedIn) return;
+
+    setLecturaActual(prev => {
+      const indiceActual = EVANGELIOS.findIndex(
+        (e) => e.libro === prev.libro && e.capitulo === prev.capitulo
+      );
+
+      const nuevoIndice = (indiceActual + 1) % EVANGELIOS.length;
+      const nuevaLectura = EVANGELIOS[nuevoIndice];
+      const nuevoSalmo = (prev.salmo % TOTAL_SALMOS) + 1;
+
+      const lecturaTemporal: LecturaStats = {
+        libro: nuevaLectura.libro,
+        capitulo: nuevaLectura.capitulo,
+        salmo: nuevoSalmo,
+        isLoading: false,
+      };
+
+      // Guardado local temporal para no golpear la BD en cada fase.
+      localStorage.setItem(LOCAL_READING_KEY, JSON.stringify(lecturaTemporal));
+      return lecturaTemporal;
+    });
+  };
+
+  const guardarLecturaDB = async () => {
+    if (!isSignedIn) return;
+
+    const lecturaTemporal = localStorage.getItem(LOCAL_READING_KEY);
+    const lecturaFuente = lecturaTemporal
+      ? JSON.parse(lecturaTemporal)
+      : lecturaActual;
+
+    try {
+      await updateReadingProgress(
+        lecturaFuente.libro,
+        lecturaFuente.capitulo,
+        lecturaFuente.salmo
+      );
+
+      // Persistimos como caché base y limpiamos temporal.
+      localStorage.setItem('oratio_lectura_cache', JSON.stringify({
+        ...lecturaFuente,
+        isLoading: false,
+      }));
+      localStorage.removeItem(LOCAL_READING_KEY);
+    } catch (error) {
+      console.error("Error guardando lectura", error);
+    }
+  };
+
   const ajustarLectura = (libro: string, capitulo: number, salmo: number) => {
     if (!isSignedIn) return;
 
@@ -98,6 +159,7 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
     const nuevaLectura = { libro, capitulo, salmo, isLoading: false };
     setLecturaActual(nuevaLectura);
     localStorage.setItem('oratio_lectura_cache', JSON.stringify(nuevaLectura));
+    localStorage.removeItem(LOCAL_READING_KEY);
 
     // B) ENVIAR A LA BD EN SILENCIO (Sin bloquear la app)
     startTransition(async () => {
@@ -110,17 +172,7 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
   };
 
   const avanzarLectura = () => {
-    if (!isSignedIn) return;
-
-    const indiceActual = EVANGELIOS.findIndex(
-      (e) => e.libro === lecturaActual.libro && e.capitulo === lecturaActual.capitulo
-    );
-
-    const nuevoIndice = (indiceActual + 1) % EVANGELIOS.length;
-    const nuevaLectura = EVANGELIOS[nuevoIndice];
-    const nuevoSalmo = (lecturaActual.salmo % TOTAL_SALMOS) + 1;
-
-    ajustarLectura(nuevaLectura.libro, nuevaLectura.capitulo, nuevoSalmo);
+    avanzarLecturaLocal();
   };
 
   const reiniciarLectura = () => {
@@ -128,7 +180,17 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ReadingContext.Provider value={{ lecturaActual, avanzarLectura, reiniciarLectura, ajustarLectura, isSaving: isPending }}>
+    <ReadingContext.Provider
+      value={{
+        lecturaActual,
+        avanzarLecturaLocal,
+        guardarLecturaDB,
+        avanzarLectura,
+        reiniciarLectura,
+        ajustarLectura,
+        isSaving: isPending,
+      }}
+    >
       {children}
     </ReadingContext.Provider>
   );

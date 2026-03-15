@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "app/sesion/finish", "app/sesion/finish"  ],
   "exclude": ["node_modules"]
 }

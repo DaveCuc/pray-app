@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { Clock, CheckCircle2 } from 'lucide-react';
+import { getTimerPreference, saveTimerPreference } from '@/actions/preferences';
 
 const OPCIONES_TIEMPO = [
   { tiempo: 20, titulo: '20 Minutos', descripcion: '1 Fase (Acción de Gracias)' },
@@ -10,17 +11,37 @@ const OPCIONES_TIEMPO = [
 ];
 
 export default function TimerPreferences() {
+  const [isPending, startTransition] = useTransition();
   const [tiempoSeleccionado, setTiempoSeleccionado] = useState<number>(60);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const guardado = localStorage.getItem('oratio-tiempo-pref');
+    setIsMounted(true);
+    // 1. LEER CACHÉ RÁPIDO
+    const guardado = localStorage.getItem('oratio_tiempo_pref');
     if (guardado) setTiempoSeleccionado(Number(guardado));
+
+    // 2. CONFIRMAR CON BASE DE DATOS
+    const sincronizarBD = async () => {
+      const tiempoReal = await getTimerPreference();
+      setTiempoSeleccionado(tiempoReal);
+      localStorage.setItem('oratio_tiempo_pref', tiempoReal.toString());
+    };
+    sincronizarBD();
   }, []);
 
   const handleSeleccion = (tiempo: number) => {
+    // A) Actualizar visual y caché al instante
     setTiempoSeleccionado(tiempo);
-    localStorage.setItem('oratio-tiempo-pref', tiempo.toString());
+    localStorage.setItem('oratio_tiempo_pref', tiempo.toString());
+
+    // B) Guardar en Base de Datos silenciosamente
+    startTransition(async () => {
+      await saveTimerPreference(tiempo);
+    });
   };
+
+  if (!isMounted) return <div className="animate-pulse h-40 bg-card rounded-2xl"></div>;
 
   return (
     <section>
@@ -36,12 +57,11 @@ export default function TimerPreferences() {
             <button
               key={opcion.tiempo}
               onClick={() => handleSeleccion(opcion.tiempo)}
-              className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
+              className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                 isSelected 
                   ? 'bg-primary/5 border-primary drop-shadow-[0_0_10px_rgba(245,165,36,0.15)]' 
                   : 'bg-card border-border hover:border-primary/50'
               }`}
-              style={{ cursor: "pointer" }}
             >
               <div className="text-left">
                 <h4 className={`font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>
@@ -57,7 +77,7 @@ export default function TimerPreferences() {
         })}
       </div>
       <p className="text-xs text-muted-foreground mt-4 text-center">
-        Esta configuración define la meta diaria, pero puedes detenerte en cualquier momento.
+        {isPending ? "Guardando preferencia..." : "Esta configuración define la meta diaria."}
       </p>
     </section>
   );
