@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 
 import RestartSection from "./_components/Restart";
 import BiblePreferences from "./_components/BiblePreferences";
+import VersionApp from "./_components/VersionApp";
 
 export default function SettingsPage() {
     return (
@@ -34,6 +35,7 @@ export default function SettingsPage() {
                 <hr />
                 <RestartSection />
                 <hr />
+                <VersionApp />
             </div>
         </div>
     );
